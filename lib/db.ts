@@ -19,9 +19,20 @@ export function getDb(): Database.Database {
   db.pragma("foreign_keys = ON");
   sqliteVec.load(db);
 
-  const schemaPath = path.join(process.cwd(), "data", "schema.sql");
-  const schema = fs.readFileSync(schemaPath, "utf8");
-  db.exec(schema);
+  // Apply schema.sql only on a fresh DB. The canonical DDL doesn't use
+  // `IF NOT EXISTS`, so re-running on an already-populated DB would
+  // throw "table already exists". Use the presence of `users` as the
+  // initialized marker.
+  const initialized = db
+    .prepare(
+      `SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'users'`,
+    )
+    .get();
+  if (!initialized) {
+    const schemaPath = path.join(process.cwd(), "data", "schema.sql");
+    const schema = fs.readFileSync(schemaPath, "utf8");
+    db.exec(schema);
+  }
 
   _db = db;
   return db;

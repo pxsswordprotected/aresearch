@@ -26,6 +26,19 @@ type ArenaResponse = {
   meta: { channels_shown: number; channels_total: number };
 };
 
+type SearchHit = {
+  block_id: number;
+  arena_block_id: number;
+  title: string | null;
+  block_type: string | null;
+  source_url: string | null;
+  arena_url: string | null;
+  snippet: string | null;
+  channel_title: string | null;
+  channel_url: string | null;
+  distance: number;
+};
+
 export default function Page() {
   const [input, setInput] = useState("");
   const [data, setData] = useState<ArenaResponse | null>(null);
@@ -33,6 +46,12 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
+  const [embedding, setEmbedding] = useState(false);
+  const [embedStatus, setEmbedStatus] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [hits, setHits] = useState<SearchHit[] | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -98,6 +117,56 @@ export default function Page() {
     }
   }
 
+  async function onEmbed() {
+    setEmbedding(true);
+    setEmbedStatus(null);
+    try {
+      const res = await fetch(`/api/embed`, { method: "POST" });
+      const body = (await res.json()) as
+        | { embedded: number; skipped: number; batches: number }
+        | { error: string };
+      if (!res.ok || "error" in body) {
+        const msg = "error" in body ? body.error : `HTTP ${res.status}`;
+        setEmbedStatus(`error: ${msg}`);
+        return;
+      }
+      setEmbedStatus(
+        body.embedded === 0
+          ? "nothing pending — all blocks with text are already embedded"
+          : `embedded ${body.embedded} new block${body.embedded === 1 ? "" : "s"} in ${body.batches} batch${body.batches === 1 ? "" : "es"}`,
+      );
+    } catch (err) {
+      setEmbedStatus(
+        `error: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    } finally {
+      setEmbedding(false);
+    }
+  }
+
+  async function onSearch(e: React.FormEvent) {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setSearching(true);
+    setSearchError(null);
+    setHits(null);
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`);
+      const body = (await res.json()) as
+        | { query: string; hits: SearchHit[] }
+        | { error: string };
+      if (!res.ok || "error" in body) {
+        const msg = "error" in body ? body.error : `HTTP ${res.status}`;
+        throw new Error(msg);
+      }
+      setHits(body.hits);
+    } catch (err) {
+      setSearchError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSearching(false);
+    }
+  }
+
   return (
     <main className="mx-auto max-w-2xl px-6 py-12 font-mono text-sm">
       <h1 className="mb-6 text-2xl font-semibold">aresearch</h1>
@@ -123,6 +192,14 @@ export default function Page() {
         >
           {saving ? "…" : "Save to DB"}
         </button>
+        <button
+          type="button"
+          onClick={onEmbed}
+          disabled={embedding}
+          className="rounded border border-neutral-900 px-4 py-2 text-neutral-900 disabled:opacity-50"
+        >
+          {embedding ? "…" : "Embed"}
+        </button>
       </form>
 
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
@@ -134,6 +211,91 @@ export default function Page() {
         >
           {saveStatus}
         </p>
+      )}
+      {embedStatus && (
+        <p
+          className={`mt-2 text-sm ${
+            embedStatus.startsWith("error") ? "text-red-600" : "text-neutral-700"
+          }`}
+        >
+          {embedStatus}
+        </p>
+      )}
+
+      <form onSubmit={onSearch} className="mt-8 flex gap-2">
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="semantic search…"
+          className="flex-1 rounded border border-neutral-300 px-3 py-2 outline-none focus:border-neutral-900"
+        />
+        <button
+          type="submit"
+          disabled={searching || !query.trim()}
+          className="rounded bg-neutral-900 px-4 py-2 text-white disabled:opacity-50"
+        >
+          {searching ? "…" : "Search"}
+        </button>
+      </form>
+      {searchError && (
+        <p className="mt-2 text-sm text-red-600">{searchError}</p>
+      )}
+      {hits && hits.length === 0 && (
+        <p className="mt-2 text-sm text-neutral-500">no results</p>
+      )}
+      {hits && hits.length > 0 && (
+        <section className="mt-4 space-y-3">
+          {hits.map((h) => (
+            <div key={h.block_id} className="border-l-2 border-neutral-200 pl-3">
+              <div>
+                <span className="text-neutral-500">
+                  {h.distance.toFixed(3)}
+                </span>{" "}
+                [{h.block_type ?? "?"}] {h.title ?? "Untitled"}{" "}
+                <a
+                  href={h.arena_url ?? "#"}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-neutral-500 underline"
+                >
+                  (id {h.arena_block_id})
+                </a>
+              </div>
+              {h.channel_title && (
+                <div className="text-neutral-500">
+                  in{" "}
+                  {h.channel_url ? (
+                    <a
+                      href={h.channel_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline"
+                    >
+                      {h.channel_title}
+                    </a>
+                  ) : (
+                    h.channel_title
+                  )}
+                </div>
+              )}
+              {h.snippet && (
+                <div className="mt-1 whitespace-pre-wrap text-neutral-700">
+                  {h.snippet}
+                </div>
+              )}
+              {h.source_url && (
+                <a
+                  href={h.source_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block text-blue-600 underline break-all"
+                >
+                  {h.source_url}
+                </a>
+              )}
+            </div>
+          ))}
+        </section>
       )}
 
       {data && (
