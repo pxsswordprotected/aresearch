@@ -19,6 +19,9 @@ type BlockOut = {
   title: string;
   type: string;
   position?: number;
+  source_url?: string;
+  content?: string;
+  content_html?: string;
 };
 
 type ChannelOut = {
@@ -98,6 +101,19 @@ export async function GET(req: Request) {
             type: String(b.type),
           };
           if (b.position !== undefined) out.position = b.position;
+          const src =
+            b.source?.url ??
+            b.attachment?.url ??
+            b.image?.original?.url ??
+            b.embed?.url ??
+            undefined;
+          if (src) out.source_url = src;
+          const rich = b.content ?? b.description ?? null;
+          if (rich) {
+            const plain = rich.plain ?? rich.markdown ?? null;
+            if (plain) out.content = plain;
+            if (rich.html) out.content_html = rich.html;
+          }
           return out;
         })
         .sort(compareBlocks);

@@ -7,6 +7,9 @@ type Block = {
   title: string;
   type: string;
   position?: number;
+  source_url?: string;
+  content?: string;
+  content_html?: string;
 };
 
 type Channel = {
@@ -103,7 +106,28 @@ export default function Page() {
               ) : (
                 c.blocks.map((b) => (
                   <div key={b.id} className="pl-4">
-                    [{b.type}] {b.title}
+                    <div>
+                      {b.position !== undefined ? `#${b.position} ` : ""}
+                      [{b.type}] {b.title}{" "}
+                      <span className="text-neutral-500">(id {b.id})</span>
+                    </div>
+                    {b.source_url && (
+                      <div className="pl-4">
+                        <a
+                          href={b.source_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-blue-600 underline break-all"
+                        >
+                          {b.source_url}
+                        </a>
+                      </div>
+                    )}
+                    {b.content && (
+                      <div className="pl-4 mt-1 whitespace-pre-wrap text-neutral-700">
+                        {b.content}
+                      </div>
+                    )}
                   </div>
                 ))
               )}

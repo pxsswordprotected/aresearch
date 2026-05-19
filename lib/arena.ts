@@ -53,13 +53,26 @@ export type ArenaBlockType =
   | "Embed"
   | (string & {});
 
+export type ArenaRichText = {
+  markdown?: string | null;
+  html?: string | null;
+  plain?: string | null;
+};
+
 export type ArenaBlock = {
   id: number;
   type: ArenaBlockType;
   base_type: "Block";
   title?: string | null;
   generated_title?: string;
-  content?: string | null;
+  // Rich text body. Populated on Text blocks. Embed/Link/Image/Attachment
+  // blocks put the upstream summary in `description` instead.
+  content?: ArenaRichText | null;
+  description?: ArenaRichText | null;
+  source?: { url?: string; title?: string | null; provider?: { name?: string; url?: string } } | null;
+  attachment?: { url?: string; file_name?: string; extension?: string } | null;
+  image?: { original?: { url?: string }; display?: { url?: string }; thumb?: { url?: string } } | null;
+  embed?: { url?: string | null; type?: string } | null;
   // Channel-context fields when fetched via /v3/channels/:id/contents.
   position?: number;
   connected_at?: string;
