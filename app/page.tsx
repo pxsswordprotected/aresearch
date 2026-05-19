@@ -31,6 +31,8 @@ export default function Page() {
   const [data, setData] = useState<ArenaResponse | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,6 +40,7 @@ export default function Page() {
     setBusy(true);
     setError(null);
     setData(null);
+    setSaveStatus(null);
     try {
       const res = await fetch(
         `/api/arena?user=${encodeURIComponent(input.trim())}`,
@@ -54,6 +57,44 @@ export default function Page() {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function onSave() {
+    if (!input.trim()) return;
+    setSaving(true);
+    setSaveStatus(null);
+    try {
+      const res = await fetch(
+        `/api/arena/ingest?user=${encodeURIComponent(input.trim())}`,
+        { method: "POST" },
+      );
+      const body = (await res.json()) as
+        | {
+            user_id: number;
+            channel_count: number;
+            block_count: number;
+            link_count: number;
+            failed_channels: string[];
+          }
+        | { error: string; status?: number };
+      if (!res.ok || "error" in body) {
+        const msg = "error" in body ? body.error : `HTTP ${res.status}`;
+        setSaveStatus(`error: ${msg}`);
+        return;
+      }
+      const failed = body.failed_channels.length
+        ? ` (${body.failed_channels.length} channels failed)`
+        : "";
+      setSaveStatus(
+        `saved: ${body.channel_count} channels, ${body.block_count} blocks, ${body.link_count} links${failed}`,
+      );
+    } catch (err) {
+      setSaveStatus(
+        `error: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -74,9 +115,26 @@ export default function Page() {
         >
           {busy ? "…" : "Fetch"}
         </button>
+        <button
+          type="button"
+          onClick={onSave}
+          disabled={saving || !input.trim()}
+          className="rounded border border-neutral-900 px-4 py-2 text-neutral-900 disabled:opacity-50"
+        >
+          {saving ? "…" : "Save to DB"}
+        </button>
       </form>
 
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+      {saveStatus && (
+        <p
+          className={`mt-2 text-sm ${
+            saveStatus.startsWith("error") ? "text-red-600" : "text-neutral-700"
+          }`}
+        >
+          {saveStatus}
+        </p>
+      )}
 
       {data && (
         <section className="mt-8 whitespace-pre-wrap leading-relaxed">

@@ -196,6 +196,24 @@ export function getUserChannels(
   );
 }
 
+export async function getAllUserChannels(
+  slug: string,
+): Promise<ArenaChannel[]> {
+  const per = 100;
+  const out: ArenaChannel[] = [];
+  let page = 1;
+  // Are.na caps `per` server-side; loop until we drain. Use meta to stop.
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const res = await getUserChannels(slug, { page, per });
+    out.push(...res.data);
+    if (res.data.length === 0) break;
+    if (page >= res.meta.total_pages) break;
+    page += 1;
+  }
+  return out;
+}
+
 export function getChannelContents(
   idOrSlug: string | number,
   opts: { page?: number; per?: number } = {},

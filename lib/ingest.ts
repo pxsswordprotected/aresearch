@@ -1,0 +1,311 @@
+// Persist an Are.na user's channels + the first page of each channel's
+// contents into the local SQLite store. Idempotent: re-running for the
+// same user updates rows in place, keyed on Are.na IDs / username.
+
+import {
+  ArenaError,
+  getAllUserChannels,
+  getChannelContents,
+  getUser,
+  isArenaBlock,
+  type ArenaBlock,
+  type ArenaChannel,
+  type ArenaUser,
+} from "@/lib/arena";
+import { getDb } from "@/lib/db";
+
+const BLOCKS_PER_CHANNEL = 10;
+const CONCURRENCY = 8;
+
+export type IngestResult = {
+  user_id: number;
+  channel_count: number;
+  block_count: number;
+  link_count: number;
+  failed_channels: string[];
+};
+
+type ChannelFetch = {
+  channel: ArenaChannel;
+  blocks: ArenaBlock[];
+};
+
+function pickRichPlain(r: { plain?: string | null; markdown?: string | null } | null | undefined) {
+  if (!r) return null;
+  return r.plain ?? r.markdown ?? null;
+}
+
+function pickRichHtml(r: { html?: string | null } | null | undefined) {
+  if (!r) return null;
+  return r.html ?? null;
+}
+
+function blockSearchText(b: ArenaBlock): string {
+  const parts: string[] = [];
+  if (typeof b.title === "string" && b.title.trim()) parts.push(b.title.trim());
+  if (typeof b.generated_title === "string" && b.generated_title.trim()) {
+    parts.push(b.generated_title.trim());
+  }
+  const contentPlain = pickRichPlain(b.content);
+  if (contentPlain) parts.push(contentPlain);
+  const descPlain = pickRichPlain(b.description);
+  if (descPlain) parts.push(descPlain);
+  return parts.join("\n").trim();
+}
+
+async function runPool<T, R>(
+  items: T[],
+  limit: number,
+  worker: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let cursor = 0;
+  const runners = new Array(Math.min(limit, items.length))
+    .fill(0)
+    .map(async () => {
+      while (true) {
+        const i = cursor++;
+        if (i >= items.length) return;
+        results[i] = await worker(items[i], i);
+      }
+    });
+  await Promise.all(runners);
+  return results;
+}
+
+export async function ingestUser(slug: string): Promise<IngestResult> {
+  const user: ArenaUser = await getUser(slug);
+  const channels = await getAllUserChannels(slug);
+
+  const failed: string[] = [];
+  const fetched = await runPool<ArenaChannel, ChannelFetch | null>(
+    channels,
+    CONCURRENCY,
+    async (c) => {
+      try {
+        const res = await getChannelContents(c.slug, {
+          per: BLOCKS_PER_CHANNEL,
+        });
+        const blocks = res.data.filter(isArenaBlock);
+        return { channel: c, blocks };
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`ingest: getChannelContents(${c.slug}) failed: ${msg}`);
+        failed.push(c.slug);
+        return null;
+      }
+    },
+  );
+
+  const db = getDb();
+
+  const upsertUser = db.prepare(`
+    INSERT INTO users (
+      arena_user_id, arena_username, profile_url, slug, full_name,
+      avatar_url, indexed_at
+    ) VALUES (
+      @arena_user_id, @arena_username, @profile_url, @slug, @full_name,
+      @avatar_url, datetime('now')
+    )
+    ON CONFLICT(arena_username) DO UPDATE SET
+      arena_user_id = excluded.arena_user_id,
+      profile_url   = excluded.profile_url,
+      slug          = excluded.slug,
+      full_name     = excluded.full_name,
+      avatar_url    = excluded.avatar_url,
+      indexed_at    = excluded.indexed_at
+  `);
+
+  const upsertChannel = db.prepare(`
+    INSERT INTO channels (
+      arena_channel_id, user_id, title, description, visibility, url, slug
+    ) VALUES (
+      @arena_channel_id, @user_id, @title, @description, @visibility, @url, @slug
+    )
+    ON CONFLICT(arena_channel_id) DO UPDATE SET
+      user_id     = excluded.user_id,
+      title       = excluded.title,
+      description = excluded.description,
+      visibility  = excluded.visibility,
+      url         = excluded.url,
+      slug        = excluded.slug
+    RETURNING id
+  `);
+
+  const upsertBlock = db.prepare(`
+    INSERT INTO blocks (
+      arena_block_id, title, description, block_type, source_url,
+      source_provider_name, source_provider_url,
+      image_url, image_thumb_url, image_display_url, image_original_url,
+      content_text, content_html, search_text, arena_url,
+      created_at, updated_at
+    ) VALUES (
+      @arena_block_id, @title, @description, @block_type, @source_url,
+      @source_provider_name, @source_provider_url,
+      @image_url, @image_thumb_url, @image_display_url, @image_original_url,
+      @content_text, @content_html, @search_text, @arena_url,
+      @created_at, @updated_at
+    )
+    ON CONFLICT(arena_block_id) DO UPDATE SET
+      title                = excluded.title,
+      description          = excluded.description,
+      block_type           = excluded.block_type,
+      source_url           = excluded.source_url,
+      source_provider_name = excluded.source_provider_name,
+      source_provider_url  = excluded.source_provider_url,
+      image_url            = excluded.image_url,
+      image_thumb_url      = excluded.image_thumb_url,
+      image_display_url    = excluded.image_display_url,
+      image_original_url   = excluded.image_original_url,
+      content_text         = excluded.content_text,
+      content_html         = excluded.content_html,
+      search_text          = excluded.search_text,
+      arena_url            = excluded.arena_url,
+      created_at           = excluded.created_at,
+      updated_at           = excluded.updated_at
+    RETURNING id
+  `);
+
+  const upsertLink = db.prepare(`
+    INSERT OR REPLACE INTO block_channels (
+      block_id, channel_id, position, connected_at
+    ) VALUES (?, ?, ?, ?)
+  `);
+
+  const findUserByUsername = db.prepare(
+    `SELECT id FROM users WHERE arena_username = ?`,
+  );
+
+  const insertSyncLog = db.prepare(`
+    INSERT INTO sync_logs (user_id, status, message, created_at)
+    VALUES (?, ?, ?, datetime('now'))
+  `);
+
+  const result = db.transaction((): IngestResult => {
+    upsertUser.run({
+      arena_user_id: user.id,
+      arena_username: user.slug,
+      profile_url: `https://www.are.na/${user.slug}`,
+      slug: user.slug,
+      full_name: user.name ?? null,
+      avatar_url: (user as { avatar?: string }).avatar ?? null,
+    });
+    const userRow = findUserByUsername.get(user.slug) as { id: number };
+    const userId = userRow.id;
+
+    let channelCount = 0;
+    let blockCount = 0;
+    let linkCount = 0;
+
+    for (const fc of fetched) {
+      if (!fc) continue;
+      const c = fc.channel;
+      const visibility =
+        (c as { visibility?: string }).visibility ??
+        (c as { status?: string }).status ??
+        null;
+      const rawDesc = (c as { description?: unknown }).description;
+      const channelDescription =
+        rawDesc && typeof rawDesc === "object"
+          ? pickRichPlain(rawDesc as { plain?: string | null; markdown?: string | null })
+          : typeof rawDesc === "string"
+            ? rawDesc
+            : null;
+      const channelUrl = `https://www.are.na/${user.slug}/${c.slug}`;
+      const row = upsertChannel.get({
+        arena_channel_id: c.id,
+        user_id: userId,
+        title: c.title ?? null,
+        description: channelDescription,
+        visibility,
+        url: channelUrl,
+        slug: c.slug,
+      }) as { id: number };
+      const channelId = row.id;
+      channelCount += 1;
+
+      for (const b of fc.blocks) {
+        const isText = b.type === "Text";
+        const contentText = pickRichPlain(b.content);
+        const contentHtml = pickRichHtml(b.content);
+        const descriptionText = isText
+          ? pickRichPlain(b.description)
+          : pickRichPlain(b.description);
+        const blockRow = upsertBlock.get({
+          arena_block_id: b.id,
+          title:
+            typeof b.title === "string" && b.title.trim()
+              ? b.title
+              : b.generated_title ?? null,
+          description: descriptionText,
+          block_type: typeof b.type === "string" ? b.type : null,
+          source_url: b.source?.url ?? null,
+          source_provider_name: b.source?.provider?.name ?? null,
+          source_provider_url: b.source?.provider?.url ?? null,
+          image_url: b.image?.original?.url ?? b.image?.display?.url ?? null,
+          image_thumb_url: b.image?.thumb?.url ?? null,
+          image_display_url: b.image?.display?.url ?? null,
+          image_original_url: b.image?.original?.url ?? null,
+          content_text: contentText,
+          content_html: contentHtml,
+          search_text: blockSearchText(b),
+          arena_url: `https://www.are.na/block/${b.id}`,
+          created_at: (b as { created_at?: string }).created_at ?? null,
+          updated_at: (b as { updated_at?: string }).updated_at ?? null,
+        }) as { id: number };
+        blockCount += 1;
+
+        upsertLink.run(
+          blockRow.id,
+          channelId,
+          b.position ?? null,
+          b.connected_at ?? null,
+        );
+        linkCount += 1;
+      }
+    }
+
+    const status: "ok" | "partial" | "error" =
+      failed.length === 0 ? "ok" : "partial";
+    const message = JSON.stringify({
+      channel_count: channelCount,
+      block_count: blockCount,
+      link_count: linkCount,
+      failed_channels: failed,
+    });
+    insertSyncLog.run(userId, status, message);
+
+    return {
+      user_id: userId,
+      channel_count: channelCount,
+      block_count: blockCount,
+      link_count: linkCount,
+      failed_channels: failed,
+    };
+  });
+
+  return result.immediate();
+}
+
+// Best-effort error log when ingest itself blows up before the main txn.
+// Swallows any DB failure — the route still returns the upstream error.
+export function logIngestError(slug: string, err: unknown): void {
+  try {
+    const db = getDb();
+    const userRow = db
+      .prepare(`SELECT id FROM users WHERE arena_username = ?`)
+      .get(slug) as { id: number } | undefined;
+    const status = err instanceof ArenaError ? "error" : "error";
+    const message = JSON.stringify({
+      slug,
+      error: err instanceof Error ? err.message : String(err),
+      arena_status: err instanceof ArenaError ? err.status : undefined,
+    });
+    db.prepare(
+      `INSERT INTO sync_logs (user_id, status, message, created_at)
+       VALUES (?, ?, ?, datetime('now'))`,
+    ).run(userRow?.id ?? null, status, message);
+  } catch {
+    // swallow
+  }
+}
