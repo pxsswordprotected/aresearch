@@ -117,23 +117,30 @@ export default function Page() {
     }
   }
 
-  async function onEmbed() {
+  async function onEmbed(rebuild = false) {
     setEmbedding(true);
     setEmbedStatus(null);
     try {
-      const res = await fetch(`/api/embed`, { method: "POST" });
+      const url = rebuild ? `/api/embed?rebuild=1` : `/api/embed`;
+      const res = await fetch(url, { method: "POST" });
       const body = (await res.json()) as
-        | { embedded: number; skipped: number; batches: number }
+        | {
+            embedded: number;
+            skipped: number;
+            batches: number;
+            cleared: number;
+          }
         | { error: string };
       if (!res.ok || "error" in body) {
         const msg = "error" in body ? body.error : `HTTP ${res.status}`;
         setEmbedStatus(`error: ${msg}`);
         return;
       }
+      const clearedPart = body.cleared > 0 ? `cleared ${body.cleared}, ` : "";
       setEmbedStatus(
         body.embedded === 0
-          ? "nothing pending — all blocks with text are already embedded"
-          : `embedded ${body.embedded} new block${body.embedded === 1 ? "" : "s"} in ${body.batches} batch${body.batches === 1 ? "" : "es"}`,
+          ? `${clearedPart}nothing pending`
+          : `${clearedPart}embedded ${body.embedded} block${body.embedded === 1 ? "" : "s"} in ${body.batches} batch${body.batches === 1 ? "" : "es"}`,
       );
     } catch (err) {
       setEmbedStatus(
@@ -194,11 +201,20 @@ export default function Page() {
         </button>
         <button
           type="button"
-          onClick={onEmbed}
+          onClick={() => onEmbed(false)}
           disabled={embedding}
           className="rounded border border-neutral-900 px-4 py-2 text-neutral-900 disabled:opacity-50"
         >
           {embedding ? "…" : "Embed"}
+        </button>
+        <button
+          type="button"
+          onClick={() => onEmbed(true)}
+          disabled={embedding}
+          title="clear vec_blocks and re-embed everything (costs ~$0.001 for 350 blocks)"
+          className="rounded border border-red-700 px-3 py-2 text-red-700 disabled:opacity-50"
+        >
+          {embedding ? "…" : "Rebuild"}
         </button>
       </form>
 

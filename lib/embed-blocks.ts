@@ -18,12 +18,23 @@ export type EmbedResult = {
   embedded: number;
   skipped: number;
   batches: number;
+  cleared: number;
 };
 
 type PendingRow = { id: number; search_text: string };
 
-export async function embedPendingBlocks(): Promise<EmbedResult> {
+export async function embedPendingBlocks(
+  opts: { rebuild?: boolean } = {},
+): Promise<EmbedResult> {
   const db = getDb();
+
+  let cleared = 0;
+  if (opts.rebuild) {
+    cleared = (db.prepare("SELECT COUNT(*) AS c FROM vec_blocks").get() as {
+      c: number;
+    }).c;
+    db.exec("DELETE FROM vec_blocks");
+  }
 
   const pending = db
     .prepare(
@@ -37,7 +48,7 @@ export async function embedPendingBlocks(): Promise<EmbedResult> {
     .all() as PendingRow[];
 
   if (pending.length === 0) {
-    return { embedded: 0, skipped: 0, batches: 0 };
+    return { embedded: 0, skipped: 0, batches: 0, cleared };
   }
 
   const insert = db.prepare(
@@ -75,5 +86,5 @@ export async function embedPendingBlocks(): Promise<EmbedResult> {
     batches += 1;
   }
 
-  return { embedded, skipped, batches };
+  return { embedded, skipped, batches, cleared };
 }
