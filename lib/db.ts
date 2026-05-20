@@ -64,6 +64,32 @@ export function getDb(): Database.Database {
         );
       `);
     }
+    if (!hasTable("block_chunks")) {
+      db.exec(`
+        CREATE TABLE block_chunks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            block_id INTEGER NOT NULL,
+            chunk_type TEXT NOT NULL,
+            chunk_index INTEGER NOT NULL,
+            text TEXT NOT NULL,
+            source_start_char INTEGER NOT NULL,
+            source_end_char INTEGER NOT NULL,
+            created_at TEXT,
+            FOREIGN KEY (block_id) REFERENCES blocks(id),
+            UNIQUE(block_id, chunk_type, chunk_index)
+        );
+      `);
+    }
+    if (!hasTable("vec_block_chunks")) {
+      db.exec(`
+        CREATE VIRTUAL TABLE vec_block_chunks USING vec0(
+            chunk_id INTEGER PRIMARY KEY,
+            embedding float[1536],
+            +embedding_model TEXT,
+            +created_at TEXT
+        );
+      `);
+    }
   }
 
   _db = db;

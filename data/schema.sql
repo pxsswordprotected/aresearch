@@ -78,3 +78,34 @@ CREATE TABLE block_ocr (
     FOREIGN KEY (block_id) REFERENCES blocks(id)
 );
 
+CREATE TABLE block_link_content (
+    block_id INTEGER PRIMARY KEY,
+    url TEXT,
+    content_text TEXT,
+    content_chars INTEGER,
+    extractor TEXT,
+    fetched_at TEXT,
+    error TEXT,
+    FOREIGN KEY (block_id) REFERENCES blocks(id)
+);
+
+CREATE TABLE block_chunks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    block_id INTEGER NOT NULL,
+    chunk_type TEXT NOT NULL,
+    chunk_index INTEGER NOT NULL,
+    text TEXT NOT NULL,
+    source_start_char INTEGER NOT NULL,
+    source_end_char INTEGER NOT NULL,
+    created_at TEXT,
+    FOREIGN KEY (block_id) REFERENCES blocks(id),
+    UNIQUE(block_id, chunk_type, chunk_index)
+);
+
+CREATE VIRTUAL TABLE vec_block_chunks USING vec0(
+    chunk_id INTEGER PRIMARY KEY,
+    embedding float[1536],
+    +embedding_model TEXT,
+    +created_at TEXT
+);
+

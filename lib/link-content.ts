@@ -19,6 +19,11 @@
 
 import { getDb } from "@/lib/db";
 import { buildSearchText } from "@/lib/search-text";
+import {
+  clearChunksForBlock,
+  LINK_CONTENT_CHUNK_TYPE,
+  rebuildChunksForBlock,
+} from "@/lib/chunks";
 
 // Full markdown stored for debugging / future re-ranking.
 const LINK_READER_STORE_MAX_CHARS = 40_000;
@@ -241,7 +246,17 @@ export async function extractPendingLinks(
       )
       .get() as { c: number }).c;
     db.exec(
-      `DELETE FROM block_link_content WHERE block_id IN (
+      `DELETE FROM vec_block_chunks
+         WHERE chunk_id IN (
+           SELECT bc.id
+             FROM block_chunks bc
+             JOIN blocks b ON b.id = bc.block_id
+            WHERE b.block_type = 'Link'
+         );
+       DELETE FROM block_chunks WHERE block_id IN (
+         SELECT id FROM blocks WHERE block_type = 'Link'
+       );
+       DELETE FROM block_link_content WHERE block_id IN (
          SELECT id FROM blocks WHERE block_type = 'Link'
        )`,
     );
@@ -344,6 +359,7 @@ export async function extractPendingLinks(
       for (const w of filtered) {
         if (w.cls.ok) continue;
         upsertPersistent.run(w.row.id, w.row.source_url, EXTRACTOR, w.cls.reason);
+        clearChunksForBlock(db, w.row.id, LINK_CONTENT_CHUNK_TYPE);
       }
     })();
     skipped += filtered.length;
@@ -373,7 +389,10 @@ export async function extractPendingLinks(
       const wall = rejectPostFetch(r.body);
       if (wall) {
         try {
-          upsertPersistent.run(item.row.id, url, EXTRACTOR, wall);
+          db.transaction(() => {
+            upsertPersistent.run(item.row.id, url, EXTRACTOR, wall);
+            clearChunksForBlock(db, item.row.id, LINK_CONTENT_CHUNK_TYPE);
+          })();
         } catch {}
         skipped += 1;
         return;
@@ -382,6 +401,12 @@ export async function extractPendingLinks(
       try {
         db.transaction(() => {
           upsertOk.run(item.row.id, url, stored, stored.length, EXTRACTOR);
+          rebuildChunksForBlock(
+            db,
+            item.row.id,
+            LINK_CONTENT_CHUNK_TYPE,
+            stored,
+          );
           const b = selectBlock.get(item.row.id) as
             | {
                 title: string | null;
@@ -429,7 +454,10 @@ export async function extractPendingLinks(
 
     if (r.kind === "persistent") {
       try {
-        upsertPersistent.run(item.row.id, url, EXTRACTOR, r.error.slice(0, 500));
+        db.transaction(() => {
+          upsertPersistent.run(item.row.id, url, EXTRACTOR, r.error.slice(0, 500));
+          clearChunksForBlock(db, item.row.id, LINK_CONTENT_CHUNK_TYPE);
+        })();
       } catch {}
       errors += 1;
       return;
@@ -437,7 +465,10 @@ export async function extractPendingLinks(
 
     // retryable
     try {
-      upsertRetryable.run(item.row.id, url, EXTRACTOR, r.error.slice(0, 500));
+      db.transaction(() => {
+        upsertRetryable.run(item.row.id, url, EXTRACTOR, r.error.slice(0, 500));
+        clearChunksForBlock(db, item.row.id, LINK_CONTENT_CHUNK_TYPE);
+      })();
     } catch {}
     console.error(`link-content: block ${item.row.id} (${url}) retryable: ${r.error}`);
     errors += 1;

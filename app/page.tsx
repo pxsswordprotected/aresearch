@@ -37,6 +37,10 @@ type SearchHit = {
   channel_title: string | null;
   channel_url: string | null;
   distance: number;
+  match_type?: "block" | "chunk";
+  chunk_index?: number;
+  source_start_char?: number;
+  source_end_char?: number;
 };
 
 export default function Page() {
@@ -52,6 +56,8 @@ export default function Page() {
   const [ocrStatus, setOcrStatus] = useState<string | null>(null);
   const [linking, setLinking] = useState(false);
   const [linkStatus, setLinkStatus] = useState<string | null>(null);
+  const [chunking, setChunking] = useState(false);
+  const [chunkStatus, setChunkStatus] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [hits, setHits] = useState<SearchHit[] | null>(null);
@@ -230,6 +236,40 @@ export default function Page() {
     }
   }
 
+  async function onProcessChunks() {
+    setChunking(true);
+    setChunkStatus(null);
+    try {
+      const res = await fetch(`/api/chunks`, { method: "POST" });
+      const body = (await res.json()) as
+        | {
+            chunked: number;
+            embedded: number;
+            skipped: number;
+            batches: number;
+            cleared: number;
+          }
+        | { error: string };
+      if (!res.ok || "error" in body) {
+        const msg = "error" in body ? body.error : `HTTP ${res.status}`;
+        setChunkStatus(`error: ${msg}`);
+        return;
+      }
+      const skippedPart = body.skipped > 0 ? `, ${body.skipped} skipped` : "";
+      setChunkStatus(
+        body.chunked === 0 && body.embedded === 0
+          ? "nothing pending"
+          : `chunked ${body.chunked}, embedded ${body.embedded} chunk${body.embedded === 1 ? "" : "s"} in ${body.batches} batch${body.batches === 1 ? "" : "es"}${skippedPart}`,
+      );
+    } catch (err) {
+      setChunkStatus(
+        `error: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    } finally {
+      setChunking(false);
+    }
+  }
+
   async function onSearch(e: React.FormEvent) {
     e.preventDefault();
     if (!query.trim()) return;
@@ -322,6 +362,15 @@ export default function Page() {
         >
           {linking ? "…" : "Re-read"}
         </button>
+        <button
+          type="button"
+          onClick={onProcessChunks}
+          disabled={chunking}
+          title="build and embed chunks for long link content"
+          className="rounded border border-neutral-900 px-4 py-2 text-neutral-900 disabled:opacity-50"
+        >
+          {chunking ? "…" : "Process chunks"}
+        </button>
       </form>
 
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
@@ -359,6 +408,15 @@ export default function Page() {
           }`}
         >
           {linkStatus}
+        </p>
+      )}
+      {chunkStatus && (
+        <p
+          className={`mt-2 text-sm ${
+            chunkStatus.startsWith("error") ? "text-red-600" : "text-neutral-700"
+          }`}
+        >
+          {chunkStatus}
         </p>
       )}
 
@@ -401,6 +459,15 @@ export default function Page() {
                   (id {h.arena_block_id})
                 </a>
               </div>
+              {h.match_type === "chunk" && (
+                <div className="text-neutral-500">
+                  chunk {h.chunk_index ?? "?"}
+                  {h.source_start_char !== undefined &&
+                  h.source_end_char !== undefined
+                    ? `, chars ${h.source_start_char}–${h.source_end_char}`
+                    : ""}
+                </div>
+              )}
               {h.channel_title && (
                 <div className="text-neutral-500">
                   in{" "}
