@@ -19,19 +19,37 @@ export function getDb(): Database.Database {
   db.pragma("foreign_keys = ON");
   sqliteVec.load(db);
 
-  // Apply schema.sql only on a fresh DB. The canonical DDL doesn't use
-  // `IF NOT EXISTS`, so re-running on an already-populated DB would
-  // throw "table already exists". Use the presence of `users` as the
-  // initialized marker.
-  const initialized = db
-    .prepare(
-      `SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'users'`,
-    )
-    .get();
-  if (!initialized) {
+  // The canonical schema in `data/schema.sql` doesn't use `IF NOT EXISTS`,
+  // so we only apply the full file on a fresh DB (no `users` table yet).
+  // For already-initialized DBs we apply targeted migrations table-by-table.
+  const hasTable = (name: string) =>
+    Boolean(
+      db
+        .prepare(
+          `SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?`,
+        )
+        .get(name),
+    );
+
+  if (!hasTable("users")) {
     const schemaPath = path.join(process.cwd(), "data", "schema.sql");
     const schema = fs.readFileSync(schemaPath, "utf8");
     db.exec(schema);
+  } else {
+    // Targeted migration: add tables introduced after the initial schema.
+    if (!hasTable("block_ocr")) {
+      db.exec(`
+        CREATE TABLE block_ocr (
+            block_id INTEGER PRIMARY KEY,
+            ocr_text TEXT,
+            ocr_summary TEXT,
+            ocr_model TEXT,
+            ocr_processed_at TEXT,
+            ocr_error TEXT,
+            FOREIGN KEY (block_id) REFERENCES blocks(id)
+        );
+      `);
+    }
   }
 
   _db = db;

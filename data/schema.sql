@@ -67,3 +67,13 @@ CREATE TABLE sync_logs (
     created_at TEXT,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+CREATE TABLE block_ocr (
+    block_id INTEGER PRIMARY KEY,
+    ocr_text TEXT,
+    ocr_summary TEXT,
+    ocr_model TEXT,
+    ocr_processed_at TEXT,
+    ocr_error TEXT,
+    FOREIGN KEY (block_id) REFERENCES blocks(id)
+);

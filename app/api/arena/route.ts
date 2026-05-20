@@ -104,7 +104,7 @@ export async function GET(req: Request) {
           const src =
             b.source?.url ??
             b.attachment?.url ??
-            b.image?.original?.url ??
+            b.image?.src ??
             b.embed?.url ??
             undefined;
           if (src) out.source_url = src;

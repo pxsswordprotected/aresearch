@@ -13,6 +13,7 @@ import {
   type ArenaUser,
 } from "@/lib/arena";
 import { getDb } from "@/lib/db";
+import { buildSearchText } from "@/lib/search-text";
 
 const BLOCKS_PER_CHANNEL = 10;
 const CONCURRENCY = 8;
@@ -40,18 +41,6 @@ function pickRichHtml(r: { html?: string | null } | null | undefined) {
   return r.html ?? null;
 }
 
-function blockSearchText(b: ArenaBlock): string {
-  const parts: string[] = [];
-  if (typeof b.title === "string" && b.title.trim()) parts.push(b.title.trim());
-  if (typeof b.generated_title === "string" && b.generated_title.trim()) {
-    parts.push(b.generated_title.trim());
-  }
-  const contentPlain = pickRichPlain(b.content);
-  if (contentPlain) parts.push(contentPlain);
-  const descPlain = pickRichPlain(b.description);
-  if (descPlain) parts.push(descPlain);
-  return parts.join("\n").trim();
-}
 
 async function runPool<T, R>(
   items: T[],
@@ -193,6 +182,46 @@ export async function ingestUser(slug: string): Promise<IngestResult> {
     const userRow = findUserByUsername.get(user.slug) as { id: number };
     const userId = userRow.id;
 
+    // Build a per-block channel-titles map so search_text reflects every
+    // channel the block lives in within this ingest pass.
+    const channelTitlesByBlockId = new Map<number, string[]>();
+    for (const fc of fetched) {
+      if (!fc) continue;
+      const title = fc.channel.title;
+      if (!title) continue;
+      for (const b of fc.blocks) {
+        const list = channelTitlesByBlockId.get(b.id);
+        if (list) list.push(title);
+        else channelTitlesByBlockId.set(b.id, [title]);
+      }
+    }
+
+    // Existing OCR (if any) must be preserved through re-ingest. Pull it
+    // by arena_block_id so we can fold it back into the recomputed
+    // search_text for the same block.
+    const ocrByArenaId = new Map<
+      number,
+      { ocr_text: string | null; ocr_summary: string | null }
+    >();
+    const ocrRows = db
+      .prepare(
+        `SELECT b.arena_block_id, o.ocr_text, o.ocr_summary
+           FROM block_ocr o
+           JOIN blocks b ON b.id = o.block_id
+          WHERE o.ocr_processed_at IS NOT NULL`,
+      )
+      .all() as Array<{
+      arena_block_id: number;
+      ocr_text: string | null;
+      ocr_summary: string | null;
+    }>;
+    for (const r of ocrRows) {
+      ocrByArenaId.set(r.arena_block_id, {
+        ocr_text: r.ocr_text,
+        ocr_summary: r.ocr_summary,
+      });
+    }
+
     let channelCount = 0;
     let blockCount = 0;
     let linkCount = 0;
@@ -242,13 +271,25 @@ export async function ingestUser(slug: string): Promise<IngestResult> {
           source_url: b.source?.url ?? null,
           source_provider_name: b.source?.provider?.name ?? null,
           source_provider_url: b.source?.provider?.url ?? null,
-          image_url: b.image?.original?.url ?? b.image?.display?.url ?? null,
-          image_thumb_url: b.image?.thumb?.url ?? null,
-          image_display_url: b.image?.display?.url ?? null,
-          image_original_url: b.image?.original?.url ?? null,
+          image_url: b.image?.src ?? b.image?.large?.src ?? null,
+          image_thumb_url: b.image?.small?.src ?? null,
+          image_display_url: b.image?.large?.src ?? b.image?.medium?.src ?? null,
+          image_original_url: b.image?.src ?? null,
           content_text: contentText,
           content_html: contentHtml,
-          search_text: blockSearchText(b),
+          search_text: buildSearchText({
+            title:
+              typeof b.title === "string" && b.title.trim()
+                ? b.title.trim()
+                : (b.generated_title ?? null),
+            description: descriptionText,
+            content_text: contentText,
+            ocr_text: ocrByArenaId.get(b.id)?.ocr_text ?? null,
+            ocr_summary: ocrByArenaId.get(b.id)?.ocr_summary ?? null,
+            block_type: typeof b.type === "string" ? b.type : null,
+            source_provider_name: b.source?.provider?.name ?? null,
+            channel_titles: channelTitlesByBlockId.get(b.id) ?? [],
+          }),
           arena_url: `https://www.are.na/block/${b.id}`,
           created_at: (b as { created_at?: string }).created_at ?? null,
           updated_at: (b as { updated_at?: string }).updated_at ?? null,

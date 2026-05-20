@@ -48,6 +48,8 @@ export default function Page() {
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [embedding, setEmbedding] = useState(false);
   const [embedStatus, setEmbedStatus] = useState<string | null>(null);
+  const [ocring, setOcring] = useState(false);
+  const [ocrStatus, setOcrStatus] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [hits, setHits] = useState<SearchHit[] | null>(null);
@@ -151,6 +153,44 @@ export default function Page() {
     }
   }
 
+  async function onOcr(rebuild = false) {
+    setOcring(true);
+    setOcrStatus(null);
+    try {
+      const url = rebuild ? `/api/ocr?rebuild=1` : `/api/ocr`;
+      const res = await fetch(url, { method: "POST" });
+      const body = (await res.json()) as
+        | {
+            processed: number;
+            errors: number;
+            skipped: number;
+            cleared: number;
+          }
+        | { error: string };
+      if (!res.ok || "error" in body) {
+        const msg = "error" in body ? body.error : `HTTP ${res.status}`;
+        setOcrStatus(`error: ${msg}`);
+        return;
+      }
+      const clearedPart = body.cleared > 0 ? `cleared ${body.cleared}, ` : "";
+      const suffix =
+        body.processed > 0
+          ? " → click Rebuild to refresh embeddings"
+          : "";
+      setOcrStatus(
+        body.processed === 0 && body.errors === 0
+          ? `${clearedPart}nothing pending`
+          : `${clearedPart}OCR'd ${body.processed}, ${body.errors} error${body.errors === 1 ? "" : "s"}${suffix}`,
+      );
+    } catch (err) {
+      setOcrStatus(
+        `error: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    } finally {
+      setOcring(false);
+    }
+  }
+
   async function onSearch(e: React.FormEvent) {
     e.preventDefault();
     if (!query.trim()) return;
@@ -216,6 +256,15 @@ export default function Page() {
         >
           {embedding ? "…" : "Rebuild"}
         </button>
+        <button
+          type="button"
+          onClick={() => onOcr(false)}
+          disabled={ocring}
+          title="OCR the next batch of image blocks (default 25)"
+          className="rounded border border-neutral-900 px-4 py-2 text-neutral-900 disabled:opacity-50"
+        >
+          {ocring ? "…" : "OCR"}
+        </button>
       </form>
 
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
@@ -235,6 +284,15 @@ export default function Page() {
           }`}
         >
           {embedStatus}
+        </p>
+      )}
+      {ocrStatus && (
+        <p
+          className={`mt-2 text-sm ${
+            ocrStatus.startsWith("error") ? "text-red-600" : "text-neutral-700"
+          }`}
+        >
+          {ocrStatus}
         </p>
       )}
 

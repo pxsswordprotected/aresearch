@@ -71,7 +71,13 @@ export type ArenaBlock = {
   description?: ArenaRichText | null;
   source?: { url?: string; title?: string | null; provider?: { name?: string; url?: string } } | null;
   attachment?: { url?: string; file_name?: string; extension?: string } | null;
-  image?: { original?: { url?: string }; display?: { url?: string }; thumb?: { url?: string } } | null;
+  image?: {
+    src?: string;
+    small?: { src?: string };
+    medium?: { src?: string };
+    large?: { src?: string };
+    square?: { src?: string };
+  } | null;
   embed?: { url?: string | null; type?: string } | null;
   // Channel-context fields when fetched via /v3/channels/:id/contents.
   position?: number;
