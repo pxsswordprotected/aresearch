@@ -50,6 +50,20 @@ export function getDb(): Database.Database {
         );
       `);
     }
+    if (!hasTable("block_link_content")) {
+      db.exec(`
+        CREATE TABLE block_link_content (
+            block_id INTEGER PRIMARY KEY,
+            url TEXT,
+            content_text TEXT,
+            content_chars INTEGER,
+            extractor TEXT,
+            fetched_at TEXT,
+            error TEXT,
+            FOREIGN KEY (block_id) REFERENCES blocks(id)
+        );
+      `);
+    }
   }
 
   _db = db;

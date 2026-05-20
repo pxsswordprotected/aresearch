@@ -77,3 +77,4 @@ CREATE TABLE block_ocr (
     ocr_error TEXT,
     FOREIGN KEY (block_id) REFERENCES blocks(id)
 );
+

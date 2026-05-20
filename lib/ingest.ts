@@ -14,6 +14,7 @@ import {
 } from "@/lib/arena";
 import { getDb } from "@/lib/db";
 import { buildSearchText } from "@/lib/search-text";
+import { LINK_READER_EMBED_SLICE_CHARS } from "@/lib/link-content";
 
 const BLOCKS_PER_CHANNEL = 10;
 const CONCURRENCY = 8;
@@ -222,6 +223,21 @@ export async function ingestUser(slug: string): Promise<IngestResult> {
       });
     }
 
+    // Same idea for link-content extractions: preserve fetched Jina
+    // bodies through re-ingest so we don't have to re-fetch.
+    const linkContentByArenaId = new Map<number, string | null>();
+    const linkRows = db
+      .prepare(
+        `SELECT b.arena_block_id, c.content_text
+           FROM block_link_content c
+           JOIN blocks b ON b.id = c.block_id
+          WHERE c.fetched_at IS NOT NULL AND c.content_text IS NOT NULL`,
+      )
+      .all() as Array<{ arena_block_id: number; content_text: string | null }>;
+    for (const r of linkRows) {
+      linkContentByArenaId.set(r.arena_block_id, r.content_text);
+    }
+
     let channelCount = 0;
     let blockCount = 0;
     let linkCount = 0;
@@ -286,6 +302,13 @@ export async function ingestUser(slug: string): Promise<IngestResult> {
             content_text: contentText,
             ocr_text: ocrByArenaId.get(b.id)?.ocr_text ?? null,
             ocr_summary: ocrByArenaId.get(b.id)?.ocr_summary ?? null,
+            link_content:
+              (linkContentByArenaId.get(b.id) ?? null) === null
+                ? null
+                : (linkContentByArenaId.get(b.id) as string).slice(
+                    0,
+                    LINK_READER_EMBED_SLICE_CHARS,
+                  ),
             block_type: typeof b.type === "string" ? b.type : null,
             source_provider_name: b.source?.provider?.name ?? null,
             channel_titles: channelTitlesByBlockId.get(b.id) ?? [],
