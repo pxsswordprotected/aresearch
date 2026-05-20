@@ -61,6 +61,19 @@ export function isFilenameLikeTitle(raw: string): boolean {
   return false;
 }
 
+// Heavy-repeat the substantive content fields so the embedding vector
+// leans toward what the block is *about* rather than its title/metadata.
+// Skip the boost when the field is so short it's effectively a title
+// itself — repeating "design temporal hierarchy" 3× doesn't add signal,
+// just amplifies whatever it already says.
+const HEAVY_REPEAT_MIN_CHARS = 120;
+const HEAVY_REPEAT_COUNT = 3;
+function heavy(s: string): string[] {
+  return s.length > HEAVY_REPEAT_MIN_CHARS
+    ? new Array(HEAVY_REPEAT_COUNT).fill(s)
+    : [s];
+}
+
 const clean = (s: string | null | undefined): string =>
   typeof s === "string" ? s.trim() : "";
 
@@ -79,9 +92,9 @@ export function buildSearchText(input: SearchTextInput): string {
 
   const parts: string[] = [];
   if (includeTitle) parts.push(title);
-  if (content) parts.push(content);
-  if (description) parts.push(description);
-  if (ocrText) parts.push(ocrText);
+  if (content) parts.push(...heavy(content));
+  if (description) parts.push(...heavy(description));
+  if (ocrText) parts.push(...heavy(ocrText));
   if (ocrSummary) parts.push(ocrSummary);
   if (input.channel_titles.length > 0) {
     parts.push(`channels: ${input.channel_titles.join(", ")}`);
