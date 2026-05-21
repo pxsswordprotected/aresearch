@@ -1,6 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+
+import { QUERY_IMAGE_MAX_BYTES } from "@/lib/query-image-limits";
+
+// Resolve a picked File to a `data:<mime>;base64,…` URL. The vision
+// endpoint takes the data URL verbatim, so no further decoding needed.
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result === "string") resolve(result);
+      else reject(new Error("unexpected FileReader result"));
+    };
+    reader.onerror = () =>
+      reject(reader.error ?? new Error("failed to read file"));
+    reader.readAsDataURL(file);
+  });
+}
 
 type Block = {
   id: number;
@@ -44,6 +62,43 @@ type SearchHit = {
   source_end_char?: number;
 };
 
+type RecTopBlock = {
+  block_id: number;
+  arena_block_id: number;
+  title: string | null;
+  block_type: string | null;
+  arena_url: string | null;
+  vec_distance: number;
+};
+
+type RecChannel = {
+  channel_id: number;
+  channel_title: string | null;
+  channel_url: string | null;
+  raw_score: number;
+  score: number;
+  channel_size: number;
+  block_count: number;
+  top_blocks: RecTopBlock[];
+};
+
+type RecRelatedBlock = {
+  block_id: number;
+  arena_block_id: number;
+  title: string | null;
+  block_type: string | null;
+  arena_url: string | null;
+  channel_title: string | null;
+  channel_url: string | null;
+  vec_distance: number;
+};
+
+type RecResponse = {
+  input_chars: number;
+  channels: RecChannel[];
+  related_blocks: RecRelatedBlock[];
+};
+
 export default function Page() {
   const [input, setInput] = useState("");
   const [data, setData] = useState<ArenaResponse | null>(null);
@@ -63,6 +118,20 @@ export default function Page() {
   const [searching, setSearching] = useState(false);
   const [hits, setHits] = useState<SearchHit[] | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [searchCaption, setSearchCaption] = useState<{
+    ocr_text: string;
+    ocr_summary: string | null;
+  } | null>(null);
+  const [searchCaptionOpen, setSearchCaptionOpen] = useState(false);
+  const [searchTranscriptionOpen, setSearchTranscriptionOpen] =
+    useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [recOpen, setRecOpen] = useState(false);
+  const [recText, setRecText] = useState("");
+  const [recBusy, setRecBusy] = useState(false);
+  const [recError, setRecError] = useState<string | null>(null);
+  const [recResult, setRecResult] = useState<RecResponse | null>(null);
+  const [recRelatedOpen, setRecRelatedOpen] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -277,6 +346,9 @@ export default function Page() {
     setSearching(true);
     setSearchError(null);
     setHits(null);
+    setSearchCaption(null);
+    setSearchCaptionOpen(false);
+    setSearchTranscriptionOpen(false);
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`);
       const body = (await res.json()) as
@@ -291,6 +363,74 @@ export default function Page() {
       setSearchError(err instanceof Error ? err.message : String(err));
     } finally {
       setSearching(false);
+    }
+  }
+
+  async function onPickSearchImage(file: File) {
+    if (!file.type.startsWith("image/")) {
+      setSearchError("please pick an image file");
+      return;
+    }
+    if (file.size > QUERY_IMAGE_MAX_BYTES) {
+      const mb = (QUERY_IMAGE_MAX_BYTES / (1024 * 1024)).toFixed(0);
+      setSearchError(`image too large (max ${mb} MB)`);
+      return;
+    }
+    setSearching(true);
+    setSearchError(null);
+    setHits(null);
+    setSearchCaption(null);
+    setSearchCaptionOpen(false);
+    setSearchTranscriptionOpen(false);
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      const res = await fetch(`/api/search`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ image_data_url: dataUrl }),
+      });
+      const body = (await res.json()) as
+        | {
+            query: string;
+            caption_meta: { ocr_text: string; ocr_summary: string | null };
+            hits: SearchHit[];
+          }
+        | { error: string };
+      if (!res.ok || "error" in body) {
+        const msg = "error" in body ? body.error : `HTTP ${res.status}`;
+        throw new Error(msg);
+      }
+      setHits(body.hits);
+      setSearchCaption(body.caption_meta);
+    } catch (err) {
+      setSearchError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  async function onRecommendChannel(e: React.FormEvent) {
+    e.preventDefault();
+    if (!recText.trim()) return;
+    setRecBusy(true);
+    setRecError(null);
+    setRecResult(null);
+    try {
+      const res = await fetch(`/api/recommend-channel`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ text: recText }),
+      });
+      const body = (await res.json()) as RecResponse | { error: string };
+      if (!res.ok || "error" in body) {
+        const msg = "error" in body ? body.error : `HTTP ${res.status}`;
+        throw new Error(msg);
+      }
+      setRecResult(body);
+    } catch (err) {
+      setRecError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setRecBusy(false);
     }
   }
 
@@ -435,9 +575,84 @@ export default function Page() {
         >
           {searching ? "…" : "Search"}
         </button>
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={searching}
+          title="caption an image with gpt-4o-mini and search the same hits"
+          className="rounded border border-neutral-900 px-4 py-2 text-neutral-900 disabled:opacity-50"
+        >
+          {searching ? "…" : "Search image"}
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            // Reset value so picking the same file again re-fires onChange.
+            e.target.value = "";
+            if (file) void onPickSearchImage(file);
+          }}
+        />
       </form>
       {searchError && (
         <p className="mt-2 text-sm text-red-600">{searchError}</p>
+      )}
+      {searchCaption && (
+        <div className="mt-3 rounded border border-neutral-200 bg-neutral-50 p-3 text-neutral-700">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <span className="text-neutral-500">interpreted as: </span>
+              <span className="text-neutral-800">
+                {(() => {
+                  const preview =
+                    (searchCaption.ocr_summary &&
+                      searchCaption.ocr_summary.trim()) ||
+                    searchCaption.ocr_text.trim();
+                  return preview.length > 140
+                    ? preview.slice(0, 140) + "…"
+                    : preview;
+                })()}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSearchCaptionOpen((v) => !v)}
+              className="shrink-0 text-neutral-500 underline"
+            >
+              {searchCaptionOpen ? "show less" : "show more"}
+            </button>
+          </div>
+          {searchCaptionOpen && (
+            <div className="mt-2 space-y-2">
+              {searchCaption.ocr_summary && (
+                <pre className="whitespace-pre-wrap font-mono text-xs text-neutral-800">
+                  {searchCaption.ocr_summary}
+                </pre>
+              )}
+              {searchCaption.ocr_text && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setSearchTranscriptionOpen((v) => !v)}
+                    className="text-neutral-500 underline"
+                  >
+                    {searchTranscriptionOpen
+                      ? "hide transcription"
+                      : "show transcription"}
+                  </button>
+                  {searchTranscriptionOpen && (
+                    <pre className="mt-1 whitespace-pre-wrap font-mono text-xs text-neutral-800">
+                      {searchCaption.ocr_text}
+                    </pre>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       )}
       {hits && hits.length === 0 && (
         <p className="mt-2 text-sm text-neutral-500">no results</p>
@@ -525,6 +740,161 @@ export default function Page() {
           ))}
         </section>
       )}
+
+      <section className="mt-8">
+        <button
+          type="button"
+          onClick={() => setRecOpen((v) => !v)}
+          className="text-neutral-700 underline"
+        >
+          {recOpen ? "Hide rec channel" : "Rec channel"}
+        </button>
+        {recOpen && (
+          <form onSubmit={onRecommendChannel} className="mt-3 space-y-2">
+            <textarea
+              value={recText}
+              onChange={(e) => setRecText(e.target.value)}
+              placeholder="paste text to find matching channels…"
+              rows={6}
+              className="w-full rounded border border-neutral-300 px-3 py-2 font-mono text-sm outline-none focus:border-neutral-900"
+            />
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={recBusy || !recText.trim()}
+                className="rounded bg-neutral-900 px-4 py-2 text-white disabled:opacity-50"
+              >
+                {recBusy ? "…" : "Recommend"}
+              </button>
+              {recResult && (
+                <span className="self-center text-neutral-500">
+                  {recResult.input_chars} chars analyzed
+                </span>
+              )}
+            </div>
+          </form>
+        )}
+        {recError && (
+          <p className="mt-2 text-sm text-red-600">{recError}</p>
+        )}
+        {recResult && recResult.channels.length === 0 && (
+          <p className="mt-3 text-sm text-neutral-500">
+            no channels above threshold
+          </p>
+        )}
+        {recResult && recResult.channels.length > 0 && (
+          <div className="mt-4 space-y-4">
+            {recResult.channels.map((c) => (
+              <div
+                key={c.channel_id}
+                className="border-l-2 border-amber-300 pl-3"
+              >
+                <div>
+                  <span
+                    className="text-neutral-500"
+                    title="score | raw_score | channel_size"
+                  >
+                    {c.score.toFixed(3)} (raw {c.raw_score.toFixed(3)}, size{" "}
+                    {c.channel_size})
+                  </span>{" "}
+                  <span className="inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-800">
+                    channel
+                  </span>{" "}
+                  {c.channel_url ? (
+                    <a
+                      href={c.channel_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline"
+                    >
+                      {c.channel_title ?? "Untitled"}
+                    </a>
+                  ) : (
+                    (c.channel_title ?? "Untitled")
+                  )}{" "}
+                  <span className="text-neutral-500">
+                    — {c.block_count} block{c.block_count === 1 ? "" : "s"}
+                  </span>
+                </div>
+                {c.top_blocks.length > 0 && (
+                  <ul className="mt-1 space-y-0.5 pl-3">
+                    {c.top_blocks.map((b) => (
+                      <li key={b.block_id} className="text-neutral-700">
+                        <span className="text-neutral-500">
+                          {b.vec_distance.toFixed(3)}
+                        </span>{" "}
+                        [{b.block_type ?? "?"}] {b.title ?? "Untitled"}{" "}
+                        <a
+                          href={b.arena_url ?? "#"}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-neutral-500 underline"
+                        >
+                          (id {b.arena_block_id})
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+            {recResult.related_blocks.length > 0 && (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setRecRelatedOpen((v) => !v)}
+                  className="text-neutral-500 underline"
+                >
+                  {recRelatedOpen
+                    ? `Hide related blocks (${recResult.related_blocks.length})`
+                    : `Show related blocks (${recResult.related_blocks.length})`}
+                </button>
+                {recRelatedOpen && (
+                  <ul className="mt-2 space-y-1 pl-3">
+                    {recResult.related_blocks.map((b) => (
+                      <li
+                        key={b.block_id}
+                        className="border-l-2 border-neutral-200 pl-2 text-neutral-700"
+                      >
+                        <span className="text-neutral-500">
+                          {b.vec_distance.toFixed(3)}
+                        </span>{" "}
+                        [{b.block_type ?? "?"}] {b.title ?? "Untitled"}{" "}
+                        <a
+                          href={b.arena_url ?? "#"}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-neutral-500 underline"
+                        >
+                          (id {b.arena_block_id})
+                        </a>
+                        {b.channel_title && (
+                          <span className="text-neutral-500">
+                            {" "}
+                            in{" "}
+                            {b.channel_url ? (
+                              <a
+                                href={b.channel_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="underline"
+                              >
+                                {b.channel_title}
+                              </a>
+                            ) : (
+                              b.channel_title
+                            )}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </section>
 
       {data && (
         <section className="mt-8 whitespace-pre-wrap leading-relaxed">
