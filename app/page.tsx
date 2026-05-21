@@ -37,6 +37,7 @@ type SearchHit = {
   channel_title: string | null;
   channel_url: string | null;
   distance: number;
+  vec_distance: number;
   match_type?: "block" | "chunk";
   chunk_index?: number;
   source_start_char?: number;
@@ -446,8 +447,30 @@ export default function Page() {
           {hits.map((h) => (
             <div key={h.block_id} className="border-l-2 border-neutral-200 pl-3">
               <div>
-                <span className="text-neutral-500">
-                  {h.distance.toFixed(3)}
+                <span
+                  className="text-neutral-500"
+                  title="adjusted | raw vec | delta"
+                >
+                  {(() => {
+                    if (process.env.NODE_ENV === "development") {
+                      const delta = h.distance - h.vec_distance;
+                      const sign = delta >= 0 ? "+" : "";
+                      return `${h.distance.toFixed(3)} (vec ${h.vec_distance.toFixed(3)}, Δ${sign}${delta.toFixed(3)})`;
+                    }
+                    return h.distance.toFixed(3);
+                  })()}
+                </span>{" "}
+                <span
+                  className={
+                    "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide " +
+                    (h.match_type === "chunk"
+                      ? "bg-amber-100 text-amber-800"
+                      : "bg-neutral-100 text-neutral-700")
+                  }
+                >
+                  {h.match_type === "chunk"
+                    ? `chunk ${h.chunk_index ?? ""}`.trim()
+                    : "block"}
                 </span>{" "}
                 [{h.block_type ?? "?"}] {h.title ?? "Untitled"}{" "}
                 <a
@@ -459,15 +482,13 @@ export default function Page() {
                   (id {h.arena_block_id})
                 </a>
               </div>
-              {h.match_type === "chunk" && (
-                <div className="text-neutral-500">
-                  chunk {h.chunk_index ?? "?"}
-                  {h.source_start_char !== undefined &&
-                  h.source_end_char !== undefined
-                    ? `, chars ${h.source_start_char}–${h.source_end_char}`
-                    : ""}
-                </div>
-              )}
+              {h.match_type === "chunk" &&
+                h.source_start_char !== undefined &&
+                h.source_end_char !== undefined && (
+                  <div className="text-neutral-500">
+                    chars {h.source_start_char}–{h.source_end_char}
+                  </div>
+                )}
               {h.channel_title && (
                 <div className="text-neutral-500">
                   in{" "}

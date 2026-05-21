@@ -19,6 +19,7 @@
 
 import { getDb } from "@/lib/db";
 import { buildSearchText } from "@/lib/search-text";
+import { cleanLinkMarkdown } from "@/lib/link-clean";
 import {
   clearChunksForBlock,
   LINK_CONTENT_CHUNK_TYPE,
@@ -79,6 +80,7 @@ const WALL_PATTERNS = [
   /sign\s+in\s+to\s+read/i,
   /subscribe\s+to\s+continue/i,
   /members?\s+only/i,
+  /apologies,?\s*but\s+something\s+went\s+wrong/i,
 ];
 
 function isCloudflareChallenge(head: string): boolean {
@@ -386,7 +388,23 @@ export async function extractPendingLinks(
     const r = await fetchWithRetry(url, timeoutMs);
 
     if (r.kind === "ok") {
-      const wall = rejectPostFetch(r.body);
+      const cleaned = cleanLinkMarkdown(r.body, { host: item.cls.url.hostname });
+      if (!cleaned || cleaned.length < 200) {
+        try {
+          db.transaction(() => {
+            upsertPersistent.run(
+              item.row.id,
+              url,
+              EXTRACTOR,
+              "filtered: post-clean-too-short",
+            );
+            clearChunksForBlock(db, item.row.id, LINK_CONTENT_CHUNK_TYPE);
+          })();
+        } catch {}
+        skipped += 1;
+        return;
+      }
+      const wall = rejectPostFetch(cleaned);
       if (wall) {
         try {
           db.transaction(() => {
@@ -397,7 +415,7 @@ export async function extractPendingLinks(
         skipped += 1;
         return;
       }
-      const stored = r.body.slice(0, LINK_READER_STORE_MAX_CHARS).trim();
+      const stored = cleaned.slice(0, LINK_READER_STORE_MAX_CHARS).trim();
       try {
         db.transaction(() => {
           upsertOk.run(item.row.id, url, stored, stored.length, EXTRACTOR);

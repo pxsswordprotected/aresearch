@@ -14,19 +14,117 @@ type Hit = {
   snippet: string | null;
   channel_title: string | null;
   channel_url: string | null;
-  distance: number;
+  distance: number; // adjusted ranking score
+  vec_distance: number; // raw cosine distance from sqlite-vec
   match_type: "block" | "chunk";
   chunk_index?: number;
   source_start_char?: number;
   source_end_char?: number;
 };
 
-type BlockHitRow = Omit<Hit, "match_type">;
-type ChunkHitRow = Omit<Hit, "match_type"> & {
+// Row shapes from SQL. distance below is the raw vec distance; we
+// transform into Hit (with adjusted distance + vec_distance) in TS.
+type BlockHitRow = {
+  block_id: number;
+  arena_block_id: number;
+  title: string | null;
+  block_type: string | null;
+  source_url: string | null;
+  arena_url: string | null;
+  snippet: string | null;
+  channel_title: string | null;
+  channel_url: string | null;
+  distance: number;
+  search_text: string | null;
+};
+type ChunkHitRow = {
+  block_id: number;
+  arena_block_id: number;
+  title: string | null;
+  block_type: string | null;
+  source_url: string | null;
+  arena_url: string | null;
+  snippet: string | null;
+  channel_title: string | null;
+  channel_url: string | null;
+  distance: number;
   chunk_index: number;
   source_start_char: number;
   source_end_char: number;
+  match_text: string | null;
 };
+
+function envNum(name: string, def: number): number {
+  const v = process.env[name];
+  if (!v) return def;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : def;
+}
+
+const CHUNK_FLAT_PENALTY = envNum("SEARCH_CHUNK_FLAT_PENALTY", 0.01);
+const CHUNK_BROAD_PENALTY = envNum("SEARCH_CHUNK_BROAD_PENALTY", 0.03);
+const PHRASE_BOOST = envNum("SEARCH_PHRASE_BOOST", 0.04);
+const RARE_TERM_BOOST = envNum("SEARCH_RARE_TERM_BOOST", 0.02);
+const TITLE_MATCH_BOOST = envNum("SEARCH_TITLE_MATCH_BOOST", 0.03);
+const BROAD_TOKEN_THRESHOLD = envNum("SEARCH_BROAD_TOKEN_THRESHOLD", 3);
+
+// Stopwords filtered from boost calculations. Title and rare-term boosts
+// require every (content) token to appear in the candidate; without this
+// filter, `to/of/and` would either bias the rare-term path (none qualify
+// because of the len>=6 cap, harmless) or — for the title path — demand
+// that titles contain trivia like "to" or "of", causing legit matches to
+// silently lose the boost. Phrase boost uses the same normalized query
+// (with stopwords kept) so verbatim phrase matching still works.
+const STOPWORDS = new Set([
+  "a", "the", "of", "and", "to", "in", "for", "is",
+]);
+
+// Normalize strings for lexical matching: lowercase, fold smart quotes
+// and dashes into ASCII, strip markdown emphasis/link punctuation, then
+// collapse whitespace. Phrase and token matches both operate on this
+// normalized form, so "interaction design" in a query matches
+// "**Interaction Design.**" or "[Interaction\nDesign](url)" in body.
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[\u2018\u2019\u201A\u201B\u2032]/g, "'")
+    .replace(/[\u201C\u201D\u201E\u201F\u2033]/g, '"')
+    .replace(/[\u2013\u2014\u2212]/g, "-")
+    .replace(/[*_`~\[\]()]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function tokenize(normalizedQ: string): string[] {
+  return normalizedQ
+    .split(" ")
+    .filter((t) => t.length >= 2 && !STOPWORDS.has(t));
+}
+
+function lexicalAdjustment(
+  text: string | null,
+  title: string | null,
+  qNorm: string,
+  tokens: string[],
+): number {
+  let adj = 0;
+  if (text) {
+    const haystack = normalize(text);
+    if (tokens.length >= 2 && haystack.includes(qNorm)) adj -= PHRASE_BOOST;
+    const rare = tokens.filter((t) => t.length >= 6);
+    if (rare.length > 0 && rare.every((t) => haystack.includes(t))) {
+      adj -= RARE_TERM_BOOST;
+    }
+  }
+  // Title boost: every content token appears in the title. Selective by
+  // construction; safely no-ops on generic single-word queries because we
+  // still require all tokens to land on the same title.
+  if (title && tokens.length >= 1) {
+    const t = normalize(title);
+    if (tokens.every((tok) => t.includes(tok))) adj -= TITLE_MATCH_BOOST;
+  }
+  return adj;
+}
 
 function chooseBetter(existing: Hit | undefined, candidate: Hit): Hit {
   if (!existing) return candidate;
@@ -44,8 +142,13 @@ export async function GET(req: Request) {
     50,
   );
 
+  const qTrim = q.trim();
+  const qNorm = normalize(qTrim);
+  const tokens = tokenize(qNorm);
+  const isBroad = tokens.length <= BROAD_TOKEN_THRESHOLD;
+
   try {
-    const vec = await embed(q.trim());
+    const vec = await embed(qTrim);
     const vector = Buffer.from(vec.buffer);
     const db = getDb();
     const blockK = Math.max(limit * 4, 20);
@@ -53,7 +156,8 @@ export async function GET(req: Request) {
 
     // sqlite-vec KNN runs inside CTEs so MATCH isn't confused by the
     // surrounding joins. We retrieve block-level and chunk-level candidates
-    // separately, then dedupe by parent block in TypeScript.
+    // separately, apply ranking adjustments in TS, then dedupe by parent
+    // block.
     const blockRows = db
       .prepare(
         `WITH knn AS MATERIALIZED (
@@ -71,6 +175,7 @@ export async function GET(req: Request) {
             b.source_url     AS source_url,
             b.arena_url      AS arena_url,
             substr(b.search_text, 1, 240) AS snippet,
+            b.search_text    AS search_text,
             c.title          AS channel_title,
             c.url            AS channel_url
            FROM knn
@@ -99,6 +204,7 @@ export async function GET(req: Request) {
             b.source_url            AS source_url,
             b.arena_url             AS arena_url,
             substr(ch.text, 1, 240) AS snippet,
+            ch.text                 AS match_text,
             c.title                 AS channel_title,
             c.url                   AS channel_url,
             ch.chunk_index          AS chunk_index,
@@ -116,19 +222,53 @@ export async function GET(req: Request) {
 
     const byBlock = new Map<number, Hit>();
     for (const row of blockRows) {
-      const candidate: Hit = { ...row, match_type: "block" };
-      byBlock.set(row.block_id, chooseBetter(byBlock.get(row.block_id), candidate));
+      const lex = lexicalAdjustment(row.search_text, row.title, qNorm, tokens);
+      const adjusted = row.distance + lex;
+      const hit: Hit = {
+        block_id: row.block_id,
+        arena_block_id: row.arena_block_id,
+        title: row.title,
+        block_type: row.block_type,
+        source_url: row.source_url,
+        arena_url: row.arena_url,
+        snippet: row.snippet,
+        channel_title: row.channel_title,
+        channel_url: row.channel_url,
+        distance: adjusted,
+        vec_distance: row.distance,
+        match_type: "block",
+      };
+      byBlock.set(row.block_id, chooseBetter(byBlock.get(row.block_id), hit));
     }
     for (const row of chunkRows) {
-      const candidate: Hit = { ...row, match_type: "chunk" };
-      byBlock.set(row.block_id, chooseBetter(byBlock.get(row.block_id), candidate));
+      const lex = lexicalAdjustment(row.match_text, row.title, qNorm, tokens);
+      let adjusted = row.distance + CHUNK_FLAT_PENALTY + lex;
+      if (isBroad) adjusted += CHUNK_BROAD_PENALTY;
+      const hit: Hit = {
+        block_id: row.block_id,
+        arena_block_id: row.arena_block_id,
+        title: row.title,
+        block_type: row.block_type,
+        source_url: row.source_url,
+        arena_url: row.arena_url,
+        snippet: row.snippet,
+        channel_title: row.channel_title,
+        channel_url: row.channel_url,
+        distance: adjusted,
+        vec_distance: row.distance,
+        match_type: "chunk",
+        chunk_index: row.chunk_index,
+        source_start_char: row.source_start_char,
+        source_end_char: row.source_end_char,
+      };
+      byBlock.set(row.block_id, chooseBetter(byBlock.get(row.block_id), hit));
     }
 
     const hits = Array.from(byBlock.values())
       .sort((a, b) => a.distance - b.distance)
       .slice(0, limit);
 
-    return NextResponse.json({ query: q.trim(), hits });
+    return NextResponse.json({ query: qTrim, hits });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: message }, { status: 500 });
