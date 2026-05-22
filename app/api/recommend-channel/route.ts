@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { embed } from "@/lib/embeddings";
+import {
+  ImageQueryError,
+  QUERY_IMAGE_MAX_DATA_URL_CHARS,
+  captionImageForQuery,
+} from "@/lib/vision-query";
 
 export const runtime = "nodejs";
 
@@ -54,6 +59,156 @@ type RelatedBlock = {
   vec_distance: number;
 };
 
+type ChannelRecResult = {
+  input_chars: number;
+  channels: Array<{
+    channel_id: number;
+    channel_title: string | null;
+    channel_url: string | null;
+    raw_score: number;
+    score: number;
+    channel_size: number;
+    block_count: number;
+    top_blocks: TopBlock[];
+  }>;
+  related_blocks: RelatedBlock[];
+};
+
+// Embed → KNN → channel aggregation. Shared by text and image branches;
+// callers feed in either user-typed text or a vision-captioned image.
+async function runChannelRec(
+  qText: string,
+  knnK: number,
+  channelLimit: number,
+): Promise<ChannelRecResult> {
+  // Silently truncate oversized input — same convention as embed-blocks.
+  const trimmed = qText.slice(0, REC_MAX_CHARS);
+
+  const vec = await embed(trimmed);
+  const vector = Buffer.from(vec.buffer);
+  const db = getDb();
+
+  // KNN over vec_blocks. LEFT JOIN block_channels so a block with no
+  // channel is still surfaced in related_blocks. Blocks living in
+  // multiple channels return one row per (block, channel) — intentional;
+  // each membership casts a separate vote downstream.
+  const rows = db
+    .prepare(
+      `WITH knn AS MATERIALIZED (
+          SELECT block_id, distance
+            FROM vec_blocks
+           WHERE embedding MATCH ?
+             AND k = ?
+        )
+        SELECT
+          knn.block_id     AS block_id,
+          knn.distance     AS distance,
+          b.arena_block_id AS arena_block_id,
+          b.title          AS title,
+          b.block_type     AS block_type,
+          b.arena_url      AS arena_url,
+          c.id             AS channel_id,
+          c.title          AS channel_title,
+          c.url            AS channel_url
+         FROM knn
+         JOIN blocks b ON b.id = knn.block_id
+         LEFT JOIN block_channels bc ON bc.block_id = knn.block_id
+         LEFT JOIN channels c        ON c.id = bc.channel_id
+        ORDER BY knn.distance`,
+    )
+    .all(vector, knnK) as KnnRow[];
+
+  // Aggregate per channel; track contributors for evidence display.
+  const agg = new Map<number, ChannelAgg>();
+  // related_blocks: one entry per distinct block_id, preferring the
+  // first (lowest-distance) row we see — same block may repeat across
+  // channels in the join.
+  const relatedByBlock = new Map<number, RelatedBlock>();
+
+  for (const row of rows) {
+    if (!relatedByBlock.has(row.block_id)) {
+      relatedByBlock.set(row.block_id, {
+        block_id: row.block_id,
+        arena_block_id: row.arena_block_id,
+        title: row.title,
+        block_type: row.block_type,
+        arena_url: row.arena_url,
+        channel_title: row.channel_title,
+        channel_url: row.channel_url,
+        vec_distance: row.distance,
+      });
+    }
+
+    if (row.channel_id == null) continue;
+    const w = Math.max(0, REC_MAX_DIST - row.distance);
+    if (w <= 0) continue;
+
+    let bucket = agg.get(row.channel_id);
+    if (!bucket) {
+      bucket = {
+        channel_id: row.channel_id,
+        channel_title: row.channel_title,
+        channel_url: row.channel_url,
+        raw_score: 0,
+        contributors: [],
+      };
+      agg.set(row.channel_id, bucket);
+    }
+    bucket.raw_score += w;
+    bucket.contributors.push({
+      block_id: row.block_id,
+      arena_block_id: row.arena_block_id,
+      title: row.title,
+      block_type: row.block_type,
+      arena_url: row.arena_url,
+      vec_distance: row.distance,
+    });
+  }
+
+  // Look up channel sizes only for channels that received any vote.
+  const channelIds = Array.from(agg.keys());
+  const sizes = new Map<number, number>();
+  if (channelIds.length > 0) {
+    const placeholders = channelIds.map(() => "?").join(",");
+    const sizeRows = db
+      .prepare(
+        `SELECT channel_id, COUNT(*) AS size
+           FROM block_channels
+          WHERE channel_id IN (${placeholders})
+          GROUP BY channel_id`,
+      )
+      .all(...channelIds) as ChannelSizeRow[];
+    for (const r of sizeRows) sizes.set(r.channel_id, r.size);
+  }
+
+  const channels = Array.from(agg.values())
+    .map((c) => {
+      const channel_size = sizes.get(c.channel_id) ?? 0;
+      const score = c.raw_score / Math.log2(channel_size + 2);
+      // contributors are pushed in distance order (rows are ORDER BY
+      // distance), so slicing yields the nearest blocks first.
+      const top_blocks = c.contributors.slice(0, REC_TOP_BLOCKS);
+      return {
+        channel_id: c.channel_id,
+        channel_title: c.channel_title,
+        channel_url: c.channel_url,
+        raw_score: c.raw_score,
+        score,
+        channel_size,
+        block_count: c.contributors.length,
+        top_blocks,
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, channelLimit);
+
+  return {
+    input_chars: trimmed.length,
+    channels,
+    related_blocks: Array.from(relatedByBlock.values()),
+  };
+}
+
 export async function POST(req: Request) {
   let body: unknown;
   try {
@@ -61,148 +216,63 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
-  const { text, k, limit } = (body ?? {}) as {
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+  }
+  const { text, image_data_url, k, limit } = body as {
     text?: unknown;
+    image_data_url?: unknown;
     k?: unknown;
     limit?: unknown;
   };
-  if (typeof text !== "string" || !text.trim()) {
+
+  // Strict discrimination: rejects { text: "", image_data_url: "..." } and
+  // friends that would otherwise sneak through a typeof-only check.
+  const hasText = typeof text === "string" && text.trim().length > 0;
+  const hasImage =
+    typeof image_data_url === "string" && image_data_url.length > 0;
+  if (hasText && hasImage) {
     return NextResponse.json(
-      { error: "Missing or empty `text`" },
+      { error: "provide text or image_data_url, not both" },
       { status: 400 },
     );
   }
+  if (!hasText && !hasImage) {
+    return NextResponse.json(
+      { error: "provide text or image_data_url" },
+      { status: 400 },
+    );
+  }
+
+  // Cheap pre-check; captionImageForQuery enforces the same bound, but
+  // bailing here avoids a wasted vision call on oversized payloads.
+  if (
+    hasImage &&
+    (image_data_url as string).length > QUERY_IMAGE_MAX_DATA_URL_CHARS
+  ) {
+    return NextResponse.json({ error: "image too large" }, { status: 413 });
+  }
+
   const knnK = clampInt(k, REC_K, 1, 200);
   const channelLimit = clampInt(limit, REC_LIMIT, 1, 50);
 
-  // Silently truncate oversized input — same convention as embed-blocks.
-  const trimmed = text.slice(0, REC_MAX_CHARS);
-
   try {
-    const vec = await embed(trimmed);
-    const vector = Buffer.from(vec.buffer);
-    const db = getDb();
-
-    // KNN over vec_blocks. LEFT JOIN block_channels so a block with no
-    // channel is still surfaced in related_blocks. Blocks living in
-    // multiple channels return one row per (block, channel) — intentional;
-    // each membership casts a separate vote downstream.
-    const rows = db
-      .prepare(
-        `WITH knn AS MATERIALIZED (
-            SELECT block_id, distance
-              FROM vec_blocks
-             WHERE embedding MATCH ?
-               AND k = ?
-          )
-          SELECT
-            knn.block_id     AS block_id,
-            knn.distance     AS distance,
-            b.arena_block_id AS arena_block_id,
-            b.title          AS title,
-            b.block_type     AS block_type,
-            b.arena_url      AS arena_url,
-            c.id             AS channel_id,
-            c.title          AS channel_title,
-            c.url            AS channel_url
-           FROM knn
-           JOIN blocks b ON b.id = knn.block_id
-           LEFT JOIN block_channels bc ON bc.block_id = knn.block_id
-           LEFT JOIN channels c        ON c.id = bc.channel_id
-          ORDER BY knn.distance`,
-      )
-      .all(vector, knnK) as KnnRow[];
-
-    // Aggregate per channel; track contributors for evidence display.
-    const agg = new Map<number, ChannelAgg>();
-    // related_blocks: one entry per distinct block_id, preferring the
-    // first (lowest-distance) row we see — same block may repeat across
-    // channels in the join.
-    const relatedByBlock = new Map<number, RelatedBlock>();
-
-    for (const row of rows) {
-      if (!relatedByBlock.has(row.block_id)) {
-        relatedByBlock.set(row.block_id, {
-          block_id: row.block_id,
-          arena_block_id: row.arena_block_id,
-          title: row.title,
-          block_type: row.block_type,
-          arena_url: row.arena_url,
-          channel_title: row.channel_title,
-          channel_url: row.channel_url,
-          vec_distance: row.distance,
-        });
-      }
-
-      if (row.channel_id == null) continue;
-      const w = Math.max(0, REC_MAX_DIST - row.distance);
-      if (w <= 0) continue;
-
-      let bucket = agg.get(row.channel_id);
-      if (!bucket) {
-        bucket = {
-          channel_id: row.channel_id,
-          channel_title: row.channel_title,
-          channel_url: row.channel_url,
-          raw_score: 0,
-          contributors: [],
-        };
-        agg.set(row.channel_id, bucket);
-      }
-      bucket.raw_score += w;
-      bucket.contributors.push({
-        block_id: row.block_id,
-        arena_block_id: row.arena_block_id,
-        title: row.title,
-        block_type: row.block_type,
-        arena_url: row.arena_url,
-        vec_distance: row.distance,
+    if (hasImage) {
+      const { caption, ocr_text, ocr_summary } = await captionImageForQuery(
+        image_data_url as string,
+      );
+      const result = await runChannelRec(caption, knnK, channelLimit);
+      return NextResponse.json({
+        ...result,
+        caption_meta: { ocr_text, ocr_summary },
       });
     }
-
-    // Look up channel sizes only for channels that received any vote.
-    const channelIds = Array.from(agg.keys());
-    const sizes = new Map<number, number>();
-    if (channelIds.length > 0) {
-      const placeholders = channelIds.map(() => "?").join(",");
-      const sizeRows = db
-        .prepare(
-          `SELECT channel_id, COUNT(*) AS size
-             FROM block_channels
-            WHERE channel_id IN (${placeholders})
-            GROUP BY channel_id`,
-        )
-        .all(...channelIds) as ChannelSizeRow[];
-      for (const r of sizeRows) sizes.set(r.channel_id, r.size);
-    }
-
-    const channels = Array.from(agg.values())
-      .map((c) => {
-        const channel_size = sizes.get(c.channel_id) ?? 0;
-        const score = c.raw_score / Math.log2(channel_size + 2);
-        // contributors are pushed in distance order (rows are ORDER BY
-        // distance), so slicing yields the nearest blocks first.
-        const top_blocks = c.contributors.slice(0, REC_TOP_BLOCKS);
-        return {
-          channel_id: c.channel_id,
-          channel_title: c.channel_title,
-          channel_url: c.channel_url,
-          raw_score: c.raw_score,
-          score,
-          channel_size,
-          block_count: c.contributors.length,
-          top_blocks,
-        };
-      })
-      .sort((a, b) => b.score - a.score)
-      .slice(0, channelLimit);
-
-    return NextResponse.json({
-      input_chars: trimmed.length,
-      channels,
-      related_blocks: Array.from(relatedByBlock.values()),
-    });
+    const result = await runChannelRec(text as string, knnK, channelLimit);
+    return NextResponse.json(result);
   } catch (err) {
+    if (err instanceof ImageQueryError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: message }, { status: 500 });
   }

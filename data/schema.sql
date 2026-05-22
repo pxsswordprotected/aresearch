@@ -78,6 +78,9 @@ CREATE TABLE block_ocr (
     FOREIGN KEY (block_id) REFERENCES blocks(id)
 );
 
+-- block_link_content stores extracted external content for Link AND Attachment
+-- blocks (PDFs, etc.). Table name predates Attachment support; kept as-is to
+-- avoid a costly data migration. See lib/external-content.ts.
 CREATE TABLE block_link_content (
     block_id INTEGER PRIMARY KEY,
     url TEXT,

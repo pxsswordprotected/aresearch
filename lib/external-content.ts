@@ -1,9 +1,10 @@
-// Link content extraction via Jina Reader.
+// External content extraction via Jina Reader.
 //
-// Pending = block_type='Link' with a non-empty http(s) source_url, not on
-// the host/extension blocklist, and no block_link_content row with a
-// non-NULL fetched_at. Each link is fetched through r.jina.ai which
-// returns markdown of the rendered article body.
+// Pending = block_type IN ('Link', 'Attachment') with a non-empty http(s)
+// source_url, not on the host/extension blocklist, and no
+// block_link_content row with a non-NULL fetched_at. Each url is fetched
+// through r.jina.ai which returns markdown of the rendered article body
+// (or extracted PDF text for Attachment blocks pointing at PDFs).
 //
 // Error semantics (divergent from OCR):
 //   - 4xx other than 429 (404, 403, 410, ...): persistent. Row stored
@@ -15,22 +16,24 @@
 //     with fetched_at = NOW (these never become valid without rebuild).
 //
 // After writing a successful row, the block's search_text is recomputed
-// to fold the new article body in alongside title/description/OCR.
+// to fold the new article body in alongside title/description/OCR, and
+// the existing vec_blocks row is dropped so the next embed pass picks
+// up the fattened search_text.
 
 import { getDb } from "@/lib/db";
 import { buildSearchText } from "@/lib/search-text";
 import { cleanLinkMarkdown } from "@/lib/link-clean";
 import {
   clearChunksForBlock,
-  LINK_CONTENT_CHUNK_TYPE,
+  EXTERNAL_CONTENT_CHUNK_TYPE,
   rebuildChunksForBlock,
 } from "@/lib/chunks";
 
 // Full markdown stored for debugging / future re-ranking.
-const LINK_READER_STORE_MAX_CHARS = 40_000;
+const EXTERNAL_CONTENT_STORE_MAX_CHARS = 40_000;
 // Slice fed into search_text (and therefore the embedding). 16K ≈ 4K
 // tokens; the lede of an article carries the thesis.
-export const LINK_READER_EMBED_SLICE_CHARS = 16_000;
+export const EXTERNAL_CONTENT_EMBED_SLICE_CHARS = 16_000;
 
 const EXTRACTOR = "jina-reader";
 
@@ -54,7 +57,6 @@ const HOST_BLOCKLIST = new Set([
 ]);
 
 const EXT_BLOCKLIST = [
-  ".pdf",
   ".zip",
   ".dmg",
   ".exe",
@@ -87,7 +89,7 @@ function isCloudflareChallenge(head: string): boolean {
   return /just a moment/i.test(head) && /cloudflare/i.test(head);
 }
 
-export type LinkContentResult = {
+export type ExternalContentResult = {
   processed: number;
   errors: number;
   skipped: number;
@@ -224,9 +226,9 @@ async function runPool<T>(
   await Promise.all(runners);
 }
 
-export async function extractPendingLinks(
+export async function extractPendingExternalContent(
   opts: { limit?: number; rebuild?: boolean } = {},
-): Promise<LinkContentResult> {
+): Promise<ExternalContentResult> {
   const limit = opts.limit ?? 100;
   const concurrency = envInt("LINK_READER_CONCURRENCY", 1);
   const delayMs = envInt("LINK_READER_DELAY_MS", 7000);
@@ -244,7 +246,7 @@ export async function extractPendingLinks(
       .prepare(
         `SELECT COUNT(*) AS c FROM block_link_content c
            JOIN blocks b ON b.id = c.block_id
-          WHERE b.block_type = 'Link'`,
+          WHERE b.block_type IN ('Link', 'Attachment')`,
       )
       .get() as { c: number }).c;
     db.exec(
@@ -253,13 +255,13 @@ export async function extractPendingLinks(
            SELECT bc.id
              FROM block_chunks bc
              JOIN blocks b ON b.id = bc.block_id
-            WHERE b.block_type = 'Link'
+            WHERE b.block_type IN ('Link', 'Attachment')
          );
        DELETE FROM block_chunks WHERE block_id IN (
-         SELECT id FROM blocks WHERE block_type = 'Link'
+         SELECT id FROM blocks WHERE block_type IN ('Link', 'Attachment')
        );
        DELETE FROM block_link_content WHERE block_id IN (
-         SELECT id FROM blocks WHERE block_type = 'Link'
+         SELECT id FROM blocks WHERE block_type IN ('Link', 'Attachment')
        )`,
     );
   }
@@ -269,7 +271,7 @@ export async function extractPendingLinks(
       `SELECT b.id, b.source_url
          FROM blocks b
          LEFT JOIN block_link_content c ON c.block_id = b.id
-        WHERE b.block_type = 'Link'
+        WHERE b.block_type IN ('Link', 'Attachment')
           AND b.source_url IS NOT NULL
           AND length(trim(b.source_url)) > 0
           AND (c.block_id IS NULL OR c.fetched_at IS NULL)
@@ -328,7 +330,7 @@ export async function extractPendingLinks(
   const selectBlock = db.prepare(`
     SELECT b.title, b.description, b.content_text, b.block_type,
            b.source_provider_name, o.ocr_text, o.ocr_summary,
-           c.content_text AS link_content
+           c.content_text AS external_content
       FROM blocks b
       LEFT JOIN block_ocr o ON o.block_id = b.id
       LEFT JOIN block_link_content c ON c.block_id = b.id
@@ -341,6 +343,9 @@ export async function extractPendingLinks(
   `);
   const updateSearchText = db.prepare(
     `UPDATE blocks SET search_text = ? WHERE id = ?`,
+  );
+  const invalidateBlockVector = db.prepare(
+    `DELETE FROM vec_blocks WHERE block_id = ?`,
   );
 
   let processed = 0;
@@ -361,7 +366,7 @@ export async function extractPendingLinks(
       for (const w of filtered) {
         if (w.cls.ok) continue;
         upsertPersistent.run(w.row.id, w.row.source_url, EXTRACTOR, w.cls.reason);
-        clearChunksForBlock(db, w.row.id, LINK_CONTENT_CHUNK_TYPE);
+        clearChunksForBlock(db, w.row.id, EXTERNAL_CONTENT_CHUNK_TYPE);
       }
     })();
     skipped += filtered.length;
@@ -398,7 +403,7 @@ export async function extractPendingLinks(
               EXTRACTOR,
               "filtered: post-clean-too-short",
             );
-            clearChunksForBlock(db, item.row.id, LINK_CONTENT_CHUNK_TYPE);
+            clearChunksForBlock(db, item.row.id, EXTERNAL_CONTENT_CHUNK_TYPE);
           })();
         } catch {}
         skipped += 1;
@@ -409,20 +414,20 @@ export async function extractPendingLinks(
         try {
           db.transaction(() => {
             upsertPersistent.run(item.row.id, url, EXTRACTOR, wall);
-            clearChunksForBlock(db, item.row.id, LINK_CONTENT_CHUNK_TYPE);
+            clearChunksForBlock(db, item.row.id, EXTERNAL_CONTENT_CHUNK_TYPE);
           })();
         } catch {}
         skipped += 1;
         return;
       }
-      const stored = cleaned.slice(0, LINK_READER_STORE_MAX_CHARS).trim();
+      const stored = cleaned.slice(0, EXTERNAL_CONTENT_STORE_MAX_CHARS).trim();
       try {
         db.transaction(() => {
           upsertOk.run(item.row.id, url, stored, stored.length, EXTRACTOR);
           rebuildChunksForBlock(
             db,
             item.row.id,
-            LINK_CONTENT_CHUNK_TYPE,
+            EXTERNAL_CONTENT_CHUNK_TYPE,
             stored,
           );
           const b = selectBlock.get(item.row.id) as
@@ -434,7 +439,7 @@ export async function extractPendingLinks(
                 source_provider_name: string | null;
                 ocr_text: string | null;
                 ocr_summary: string | null;
-                link_content: string | null;
+                external_content: string | null;
               }
             | undefined;
           if (b) {
@@ -443,8 +448,8 @@ export async function extractPendingLinks(
             )
               .map((c) => c.title)
               .filter((t): t is string => Boolean(t && t.trim()));
-            const sliced = b.link_content
-              ? b.link_content.slice(0, LINK_READER_EMBED_SLICE_CHARS)
+            const sliced = b.external_content
+              ? b.external_content.slice(0, EXTERNAL_CONTENT_EMBED_SLICE_CHARS)
               : null;
             const newSearchText = buildSearchText({
               title: b.title,
@@ -452,18 +457,23 @@ export async function extractPendingLinks(
               content_text: b.content_text,
               ocr_text: b.ocr_text,
               ocr_summary: b.ocr_summary,
-              link_content: sliced,
+              external_content: sliced,
               block_type: b.block_type,
               source_provider_name: b.source_provider_name,
               channel_titles: channelTitles,
             });
             updateSearchText.run(newSearchText, item.row.id);
+            // The block's existing vec_blocks row was embedded from the
+            // pre-fetch search_text (often just the filename). Drop it so
+            // the next embedPendingBlocks run re-embeds from the now-
+            // fattened search_text.
+            invalidateBlockVector.run(item.row.id);
           }
         })();
         processed += 1;
       } catch (err) {
         console.error(
-          `link-content: block ${item.row.id} write failed: ${err instanceof Error ? err.message : String(err)}`,
+          `external-content: block ${item.row.id} write failed: ${err instanceof Error ? err.message : String(err)}`,
         );
         errors += 1;
       }
@@ -474,7 +484,7 @@ export async function extractPendingLinks(
       try {
         db.transaction(() => {
           upsertPersistent.run(item.row.id, url, EXTRACTOR, r.error.slice(0, 500));
-          clearChunksForBlock(db, item.row.id, LINK_CONTENT_CHUNK_TYPE);
+          clearChunksForBlock(db, item.row.id, EXTERNAL_CONTENT_CHUNK_TYPE);
         })();
       } catch {}
       errors += 1;
@@ -485,10 +495,10 @@ export async function extractPendingLinks(
     try {
       db.transaction(() => {
         upsertRetryable.run(item.row.id, url, EXTRACTOR, r.error.slice(0, 500));
-        clearChunksForBlock(db, item.row.id, LINK_CONTENT_CHUNK_TYPE);
+        clearChunksForBlock(db, item.row.id, EXTERNAL_CONTENT_CHUNK_TYPE);
       })();
     } catch {}
-    console.error(`link-content: block ${item.row.id} (${url}) retryable: ${r.error}`);
+    console.error(`external-content: block ${item.row.id} (${url}) retryable: ${r.error}`);
     errors += 1;
   });
 

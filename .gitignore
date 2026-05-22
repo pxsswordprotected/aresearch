@@ -9,3 +9,4 @@ out
 *.db-shm
 .DS_Store
 next-env.d.ts.bak
+*.md

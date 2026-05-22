@@ -14,7 +14,7 @@ import {
 } from "@/lib/arena";
 import { getDb } from "@/lib/db";
 import { buildSearchText } from "@/lib/search-text";
-import { LINK_READER_EMBED_SLICE_CHARS } from "@/lib/link-content";
+import { EXTERNAL_CONTENT_EMBED_SLICE_CHARS } from "@/lib/external-content";
 
 const BLOCKS_PER_CHANNEL = 10;
 const CONCURRENCY = 8;
@@ -223,10 +223,10 @@ export async function ingestUser(slug: string): Promise<IngestResult> {
       });
     }
 
-    // Same idea for link-content extractions: preserve fetched Jina
+    // Same idea for external-content extractions: preserve fetched Jina
     // bodies through re-ingest so we don't have to re-fetch.
-    const linkContentByArenaId = new Map<number, string | null>();
-    const linkRows = db
+    const externalContentByArenaId = new Map<number, string | null>();
+    const externalRows = db
       .prepare(
         `SELECT b.arena_block_id, c.content_text
            FROM block_link_content c
@@ -234,8 +234,8 @@ export async function ingestUser(slug: string): Promise<IngestResult> {
           WHERE c.fetched_at IS NOT NULL AND c.content_text IS NOT NULL`,
       )
       .all() as Array<{ arena_block_id: number; content_text: string | null }>;
-    for (const r of linkRows) {
-      linkContentByArenaId.set(r.arena_block_id, r.content_text);
+    for (const r of externalRows) {
+      externalContentByArenaId.set(r.arena_block_id, r.content_text);
     }
 
     let channelCount = 0;
@@ -302,12 +302,12 @@ export async function ingestUser(slug: string): Promise<IngestResult> {
             content_text: contentText,
             ocr_text: ocrByArenaId.get(b.id)?.ocr_text ?? null,
             ocr_summary: ocrByArenaId.get(b.id)?.ocr_summary ?? null,
-            link_content:
-              (linkContentByArenaId.get(b.id) ?? null) === null
+            external_content:
+              (externalContentByArenaId.get(b.id) ?? null) === null
                 ? null
-                : (linkContentByArenaId.get(b.id) as string).slice(
+                : (externalContentByArenaId.get(b.id) as string).slice(
                     0,
-                    LINK_READER_EMBED_SLICE_CHARS,
+                    EXTERNAL_CONTENT_EMBED_SLICE_CHARS,
                   ),
             block_type: typeof b.type === "string" ? b.type : null,
             source_provider_name: b.source?.provider?.name ?? null,

@@ -97,6 +97,7 @@ type RecResponse = {
   input_chars: number;
   channels: RecChannel[];
   related_blocks: RecRelatedBlock[];
+  caption_meta?: { ocr_text: string; ocr_summary: string | null };
 };
 
 export default function Page() {
@@ -110,8 +111,8 @@ export default function Page() {
   const [embedStatus, setEmbedStatus] = useState<string | null>(null);
   const [ocring, setOcring] = useState(false);
   const [ocrStatus, setOcrStatus] = useState<string | null>(null);
-  const [linking, setLinking] = useState(false);
-  const [linkStatus, setLinkStatus] = useState<string | null>(null);
+  const [extLoading, setExtLoading] = useState(false);
+  const [extStatus, setExtStatus] = useState<string | null>(null);
   const [chunking, setChunking] = useState(false);
   const [chunkStatus, setChunkStatus] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -132,6 +133,13 @@ export default function Page() {
   const [recError, setRecError] = useState<string | null>(null);
   const [recResult, setRecResult] = useState<RecResponse | null>(null);
   const [recRelatedOpen, setRecRelatedOpen] = useState(false);
+  const [recCaption, setRecCaption] = useState<{
+    ocr_text: string;
+    ocr_summary: string | null;
+  } | null>(null);
+  const [recCaptionOpen, setRecCaptionOpen] = useState(false);
+  const [recTranscriptionOpen, setRecTranscriptionOpen] = useState(false);
+  const recFileInputRef = useRef<HTMLInputElement | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -269,11 +277,11 @@ export default function Page() {
     }
   }
 
-  async function onLinkContent(rebuild = false) {
-    setLinking(true);
-    setLinkStatus(null);
+  async function onExternalContent(rebuild = false) {
+    setExtLoading(true);
+    setExtStatus(null);
     try {
-      const url = rebuild ? `/api/link-content?rebuild=1` : `/api/link-content`;
+      const url = rebuild ? `/api/external-content?rebuild=1` : `/api/external-content`;
       const res = await fetch(url, { method: "POST" });
       const body = (await res.json()) as
         | {
@@ -285,24 +293,26 @@ export default function Page() {
         | { error: string };
       if (!res.ok || "error" in body) {
         const msg = "error" in body ? body.error : `HTTP ${res.status}`;
-        setLinkStatus(`error: ${msg}`);
+        setExtStatus(`error: ${msg}`);
         return;
       }
       const clearedPart = body.cleared > 0 ? `cleared ${body.cleared}, ` : "";
       const skippedPart = body.skipped > 0 ? `, ${body.skipped} skipped` : "";
       const suffix =
-        body.processed > 0 ? " → click Rebuild to refresh embeddings" : "";
-      setLinkStatus(
+        body.processed > 0
+          ? " → click Embed to refresh block vectors, Process chunks to embed PDF passages"
+          : "";
+      setExtStatus(
         body.processed === 0 && body.errors === 0 && body.skipped === 0
           ? `${clearedPart}nothing pending`
           : `${clearedPart}read ${body.processed}, ${body.errors} error${body.errors === 1 ? "" : "s"}${skippedPart}${suffix}`,
       );
     } catch (err) {
-      setLinkStatus(
+      setExtStatus(
         `error: ${err instanceof Error ? err.message : String(err)}`,
       );
     } finally {
-      setLinking(false);
+      setExtLoading(false);
     }
   }
 
@@ -415,6 +425,9 @@ export default function Page() {
     setRecBusy(true);
     setRecError(null);
     setRecResult(null);
+    setRecCaption(null);
+    setRecCaptionOpen(false);
+    setRecTranscriptionOpen(false);
     try {
       const res = await fetch(`/api/recommend-channel`, {
         method: "POST",
@@ -427,6 +440,44 @@ export default function Page() {
         throw new Error(msg);
       }
       setRecResult(body);
+    } catch (err) {
+      setRecError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setRecBusy(false);
+    }
+  }
+
+  async function onPickRecImage(file: File) {
+    if (!file.type.startsWith("image/")) {
+      setRecError("please pick an image file");
+      return;
+    }
+    if (file.size > QUERY_IMAGE_MAX_BYTES) {
+      const mb = (QUERY_IMAGE_MAX_BYTES / (1024 * 1024)).toFixed(0);
+      setRecError(`image too large (max ${mb} MB)`);
+      return;
+    }
+    setRecBusy(true);
+    setRecError(null);
+    setRecResult(null);
+    setRecRelatedOpen(false);
+    setRecCaption(null);
+    setRecCaptionOpen(false);
+    setRecTranscriptionOpen(false);
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      const res = await fetch(`/api/recommend-channel`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ image_data_url: dataUrl }),
+      });
+      const body = (await res.json()) as RecResponse | { error: string };
+      if (!res.ok || "error" in body) {
+        const msg = "error" in body ? body.error : `HTTP ${res.status}`;
+        throw new Error(msg);
+      }
+      setRecResult(body);
+      if (body.caption_meta) setRecCaption(body.caption_meta);
     } catch (err) {
       setRecError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -487,21 +538,21 @@ export default function Page() {
         </button>
         <button
           type="button"
-          onClick={() => onLinkContent(false)}
-          disabled={linking}
-          title="fetch link articles via Jina Reader (default 100)"
+          onClick={() => onExternalContent(false)}
+          disabled={extLoading}
+          title="fetch Link + Attachment bodies via Jina Reader (default 100)"
           className="rounded border border-neutral-900 px-4 py-2 text-neutral-900 disabled:opacity-50"
         >
-          {linking ? "…" : "Read links"}
+          {extLoading ? "…" : "Read content"}
         </button>
         <button
           type="button"
-          onClick={() => onLinkContent(true)}
-          disabled={linking}
-          title="clear block_link_content for Link blocks and re-fetch"
+          onClick={() => onExternalContent(true)}
+          disabled={extLoading}
+          title="clear block_link_content for Link + Attachment blocks and re-fetch"
           className="rounded border border-red-700 px-3 py-2 text-red-700 disabled:opacity-50"
         >
-          {linking ? "…" : "Re-read"}
+          {extLoading ? "…" : "Re-read"}
         </button>
         <button
           type="button"
@@ -542,13 +593,13 @@ export default function Page() {
           {ocrStatus}
         </p>
       )}
-      {linkStatus && (
+      {extStatus && (
         <p
           className={`mt-2 text-sm ${
-            linkStatus.startsWith("error") ? "text-red-600" : "text-neutral-700"
+            extStatus.startsWith("error") ? "text-red-600" : "text-neutral-700"
           }`}
         >
-          {linkStatus}
+          {extStatus}
         </p>
       )}
       {chunkStatus && (
@@ -766,6 +817,27 @@ export default function Page() {
               >
                 {recBusy ? "…" : "Recommend"}
               </button>
+              <button
+                type="button"
+                onClick={() => recFileInputRef.current?.click()}
+                disabled={recBusy}
+                title="caption an image with gpt-4o-mini and rec channels"
+                className="rounded border border-neutral-900 px-4 py-2 text-neutral-900 disabled:opacity-50"
+              >
+                {recBusy ? "…" : "Recommend from image"}
+              </button>
+              <input
+                ref={recFileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  // Reset so picking the same file again re-fires onChange.
+                  e.target.value = "";
+                  if (file) void onPickRecImage(file);
+                }}
+              />
               {recResult && (
                 <span className="self-center text-neutral-500">
                   {recResult.input_chars} chars analyzed
@@ -776,6 +848,60 @@ export default function Page() {
         )}
         {recError && (
           <p className="mt-2 text-sm text-red-600">{recError}</p>
+        )}
+        {recCaption && (
+          <div className="mt-3 rounded border border-neutral-200 bg-neutral-50 p-3 text-neutral-700">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <span className="text-neutral-500">interpreted as: </span>
+                <span className="text-neutral-800">
+                  {(() => {
+                    const preview =
+                      (recCaption.ocr_summary &&
+                        recCaption.ocr_summary.trim()) ||
+                      recCaption.ocr_text.trim();
+                    return preview.length > 140
+                      ? preview.slice(0, 140) + "…"
+                      : preview;
+                  })()}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRecCaptionOpen((v) => !v)}
+                className="shrink-0 text-neutral-500 underline"
+              >
+                {recCaptionOpen ? "show less" : "show more"}
+              </button>
+            </div>
+            {recCaptionOpen && (
+              <div className="mt-2 space-y-2">
+                {recCaption.ocr_summary && (
+                  <pre className="whitespace-pre-wrap font-mono text-xs text-neutral-800">
+                    {recCaption.ocr_summary}
+                  </pre>
+                )}
+                {recCaption.ocr_text && (
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setRecTranscriptionOpen((v) => !v)}
+                      className="text-neutral-500 underline"
+                    >
+                      {recTranscriptionOpen
+                        ? "hide transcription"
+                        : "show transcription"}
+                    </button>
+                    {recTranscriptionOpen && (
+                      <pre className="mt-1 whitespace-pre-wrap font-mono text-xs text-neutral-800">
+                        {recCaption.ocr_text}
+                      </pre>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         )}
         {recResult && recResult.channels.length === 0 && (
           <p className="mt-3 text-sm text-neutral-500">

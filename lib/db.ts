@@ -51,6 +51,10 @@ export function getDb(): Database.Database {
       `);
     }
     if (!hasTable("block_link_content")) {
+      // block_link_content stores extracted external content for Link AND
+      // Attachment blocks (PDFs, etc.). Table name predates Attachment
+      // support; kept as-is to avoid a costly data migration. See
+      // lib/external-content.ts.
       db.exec(`
         CREATE TABLE block_link_content (
             block_id INTEGER PRIMARY KEY,
@@ -89,6 +93,16 @@ export function getDb(): Database.Database {
             +created_at TEXT
         );
       `);
+    }
+
+    // One-time chunk_type tag rename: link_content → external_content.
+    // Idempotent — re-running is a no-op once the rows are renamed.
+    if (hasTable("block_chunks")) {
+      db.prepare(
+        `UPDATE block_chunks
+            SET chunk_type = 'external_content'
+          WHERE chunk_type = 'link_content'`,
+      ).run();
     }
   }
 

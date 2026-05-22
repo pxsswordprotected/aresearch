@@ -5,7 +5,7 @@ import { EMBEDDING_MODEL, embedMany } from "@/lib/embeddings";
 export const LINK_CHUNK_MIN_CHARS = 8000;
 export const LINK_CHUNK_MAX_CHARS = 3000;
 export const LINK_CHUNK_OVERLAP_CHARS = 400;
-export const LINK_CONTENT_CHUNK_TYPE = "link_content";
+export const EXTERNAL_CONTENT_CHUNK_TYPE = "external_content";
 
 const BATCH_SIZE = 100;
 
@@ -164,7 +164,7 @@ function rebuildMissingLinkChunks(db: Database.Database): number {
           )
         ORDER BY c.block_id`,
     )
-    .all(LINK_CHUNK_MIN_CHARS, LINK_CONTENT_CHUNK_TYPE) as LinkContentRow[];
+    .all(LINK_CHUNK_MIN_CHARS, EXTERNAL_CONTENT_CHUNK_TYPE) as LinkContentRow[];
 
   let chunked = 0;
   const tx = db.transaction((items: LinkContentRow[]) => {
@@ -172,7 +172,7 @@ function rebuildMissingLinkChunks(db: Database.Database): number {
       chunked += rebuildChunksForBlock(
         db,
         row.block_id,
-        LINK_CONTENT_CHUNK_TYPE,
+        EXTERNAL_CONTENT_CHUNK_TYPE,
         row.content_text,
       );
     }
@@ -186,7 +186,7 @@ function rebuildAllLinkChunks(db: Database.Database): { chunked: number; cleared
     .prepare(
       `SELECT COUNT(*) AS c FROM block_chunks WHERE chunk_type = ?`,
     )
-    .get(LINK_CONTENT_CHUNK_TYPE) as { c: number };
+    .get(EXTERNAL_CONTENT_CHUNK_TYPE) as { c: number };
 
   db.transaction(() => {
     db.prepare(
@@ -194,9 +194,9 @@ function rebuildAllLinkChunks(db: Database.Database): { chunked: number; cleared
         WHERE chunk_id IN (
           SELECT id FROM block_chunks WHERE chunk_type = ?
         )`,
-    ).run(LINK_CONTENT_CHUNK_TYPE);
+    ).run(EXTERNAL_CONTENT_CHUNK_TYPE);
     db.prepare(`DELETE FROM block_chunks WHERE chunk_type = ?`).run(
-      LINK_CONTENT_CHUNK_TYPE,
+      EXTERNAL_CONTENT_CHUNK_TYPE,
     );
   })();
 
