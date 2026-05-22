@@ -119,6 +119,7 @@ export default function Page() {
   const [searching, setSearching] = useState(false);
   const [hits, setHits] = useState<SearchHit[] | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [searchImage, setSearchImage] = useState<string | null>(null);
   const [searchCaption, setSearchCaption] = useState<{
     ocr_text: string;
     ocr_summary: string | null;
@@ -356,6 +357,7 @@ export default function Page() {
     setSearching(true);
     setSearchError(null);
     setHits(null);
+    setSearchImage(null);
     setSearchCaption(null);
     setSearchCaptionOpen(false);
     setSearchTranscriptionOpen(false);
@@ -394,6 +396,7 @@ export default function Page() {
     setSearchTranscriptionOpen(false);
     try {
       const dataUrl = await readFileAsDataUrl(file);
+      setSearchImage(dataUrl);
       const res = await fetch(`/api/search`, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -612,7 +615,25 @@ export default function Page() {
         </p>
       )}
 
-      <form onSubmit={onSearch} className="mt-8 flex gap-2">
+      <form onSubmit={onSearch} className="mt-8 flex items-center gap-2">
+        {searchImage && (
+          <div className="relative shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={searchImage}
+              alt="search query image"
+              className="h-10 w-10 rounded border border-neutral-300 object-cover"
+            />
+            <button
+              type="button"
+              onClick={() => setSearchImage(null)}
+              title="clear image"
+              className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-neutral-900 text-[10px] leading-none text-white"
+            >
+              ×
+            </button>
+          </div>
+        )}
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
