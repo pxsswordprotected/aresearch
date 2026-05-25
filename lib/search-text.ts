@@ -16,6 +16,7 @@ export type SearchTextInput = {
   ocr_text?: string | null;
   ocr_summary?: string | null;
   external_content?: string | null;
+  transcript_text?: string | null;
   block_type?: string | null;
   source_provider_name?: string | null;
   channel_titles: string[];
@@ -85,9 +86,10 @@ export function buildSearchText(input: SearchTextInput): string {
   const ocrText = clean(input.ocr_text);
   const ocrSummary = clean(input.ocr_summary);
   const externalContent = clean(input.external_content);
+  const transcriptText = clean(input.transcript_text);
 
   const hasOtherContent = Boolean(
-    description || content || ocrText || ocrSummary || externalContent,
+    description || content || ocrText || ocrSummary || externalContent || transcriptText,
   );
   const titleIsJunk = title && isFilenameLikeTitle(title);
   const includeTitle = title && (!titleIsJunk || !hasOtherContent);
@@ -97,6 +99,7 @@ export function buildSearchText(input: SearchTextInput): string {
   if (content) parts.push(...heavy(content));
   if (description) parts.push(...heavy(description));
   if (externalContent) parts.push(externalContent);
+  if (transcriptText) parts.push(transcriptText);
   if (ocrText) parts.push(...heavy(ocrText));
   if (ocrSummary) parts.push(ocrSummary);
   if (input.channel_titles.length > 0) {

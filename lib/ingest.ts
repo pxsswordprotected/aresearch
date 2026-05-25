@@ -15,6 +15,7 @@ import {
 import { getDb } from "@/lib/db";
 import { buildSearchText } from "@/lib/search-text";
 import { EXTERNAL_CONTENT_EMBED_SLICE_CHARS } from "@/lib/external-content";
+import { TRANSCRIPT_EMBED_SLICE_CHARS } from "@/lib/transcripts";
 
 const BLOCKS_PER_CHANNEL = 10;
 const CONCURRENCY = 8;
@@ -238,6 +239,21 @@ export async function ingestUser(slug: string): Promise<IngestResult> {
       externalContentByArenaId.set(r.arena_block_id, r.content_text);
     }
 
+    // Same idea for YouTube transcripts: keep fetched yt-dlp bodies
+    // through re-ingest so search_text can include them again.
+    const transcriptByArenaId = new Map<number, string | null>();
+    const transcriptRows = db
+      .prepare(
+        `SELECT b.arena_block_id, t.transcript_text
+           FROM block_transcripts t
+           JOIN blocks b ON b.id = t.block_id
+          WHERE t.fetched_at IS NOT NULL AND t.transcript_text IS NOT NULL`,
+      )
+      .all() as Array<{ arena_block_id: number; transcript_text: string | null }>;
+    for (const r of transcriptRows) {
+      transcriptByArenaId.set(r.arena_block_id, r.transcript_text);
+    }
+
     let channelCount = 0;
     let blockCount = 0;
     let linkCount = 0;
@@ -308,6 +324,13 @@ export async function ingestUser(slug: string): Promise<IngestResult> {
                 : (externalContentByArenaId.get(b.id) as string).slice(
                     0,
                     EXTERNAL_CONTENT_EMBED_SLICE_CHARS,
+                  ),
+            transcript_text:
+              (transcriptByArenaId.get(b.id) ?? null) === null
+                ? null
+                : (transcriptByArenaId.get(b.id) as string).slice(
+                    0,
+                    TRANSCRIPT_EMBED_SLICE_CHARS,
                   ),
             block_type: typeof b.type === "string" ? b.type : null,
             source_provider_name: b.source?.provider?.name ?? null,

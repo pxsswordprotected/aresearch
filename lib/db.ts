@@ -68,6 +68,21 @@ export function getDb(): Database.Database {
         );
       `);
     }
+    if (!hasTable("block_transcripts")) {
+      // block_transcripts stores YouTube subtitles extracted via yt-dlp.
+      // See lib/transcripts.ts.
+      db.exec(`
+        CREATE TABLE block_transcripts (
+            block_id INTEGER PRIMARY KEY,
+            transcript_text TEXT,
+            source TEXT,
+            language TEXT,
+            fetched_at TEXT,
+            error TEXT,
+            FOREIGN KEY (block_id) REFERENCES blocks(id)
+        );
+      `);
+    }
     if (!hasTable("block_chunks")) {
       db.exec(`
         CREATE TABLE block_chunks (

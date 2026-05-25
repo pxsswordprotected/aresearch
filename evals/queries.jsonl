@@ -1,0 +1,15 @@
+{"q":"design temporal hierarchy","expect_channel":"DSGN/ENG NOTES","note":"block-title-only hit (id 70)"}
+{"q":"ways of seeing john berger","expect_channel":"photography","note":"video block (id 312)"}
+{"q":"rick owens anthem leather jacket","expect_channel":"Wear","note":"OCR/image-description hit"}
+{"q":"emptiness inherent existence","expect_channel":"Seeing That Frees","note":"long-text body hit"}
+{"q":"virtualization only render visible","expect_channel":"DSGN/ENG NOTES","note":"in-block text (id 77)"}
+{"q":"novelty 90% familiar 10% unexpected","expect_channel":"DSGN/ENG NOTES","note":"phrase boost (id 69)"}
+{"q":"metaphors and imagery in writing","expect_channel":"thinking","note":"block-title match (id 299)"}
+{"q":"intend fully care zero alexander technique","expect_channel":"thinking","note":"title + body (id 295)"}
+{"q":"Trungpa Journey Without Goal","expect_channel":"books","note":"link-title body hit"}
+{"q":"Biology of Moral Systems Alexander","expect_channel":"books","note":"link metadata hit"}
+{"q":"oxygen advantage breathing techniques","expect_channel":"books","note":"link metadata hit"}
+{"q":"religion phenomenological feedback rituals","expect_channel":"thinking","note":"text-block body (id 293)"}
+{"q":"locally optimal state conditioned system","expect_channel":"thinking","note":"title + body (id 301)"}
+{"q":"haskell type out the code","expect_channel":"DSGN/ENG NOTES","note":"external-content body (id 3692)"}
+{"q":"isozaki architecture japan","expect_channel":"DSIGN","note":"OCR-only image hit (id 3)"}

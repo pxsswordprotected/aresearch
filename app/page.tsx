@@ -38,6 +38,13 @@ type Channel = {
   blocks: Block[];
 };
 
+type IndexedChannel = {
+  id: number;
+  title: string | null;
+  slug: string | null;
+  block_count: number;
+};
+
 type ArenaResponse = {
   user: { slug: string; name: string; channel_count?: number };
   channels: Channel[];
@@ -113,6 +120,8 @@ export default function Page() {
   const [ocrStatus, setOcrStatus] = useState<string | null>(null);
   const [extLoading, setExtLoading] = useState(false);
   const [extStatus, setExtStatus] = useState<string | null>(null);
+  const [txLoading, setTxLoading] = useState(false);
+  const [txStatus, setTxStatus] = useState<string | null>(null);
   const [chunking, setChunking] = useState(false);
   const [chunkStatus, setChunkStatus] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -128,6 +137,13 @@ export default function Page() {
   const [searchTranscriptionOpen, setSearchTranscriptionOpen] =
     useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [channels, setChannels] = useState<IndexedChannel[] | null>(null);
+  const [channelsLoading, setChannelsLoading] = useState(false);
+  const [channelsError, setChannelsError] = useState<string | null>(null);
+  const [selectedChannelIds, setSelectedChannelIds] = useState<Set<number>>(
+    () => new Set(),
+  );
+  const [filterOpen, setFilterOpen] = useState(false);
   const [recOpen, setRecOpen] = useState(false);
   const [recText, setRecText] = useState("");
   const [recBusy, setRecBusy] = useState(false);
@@ -317,6 +333,45 @@ export default function Page() {
     }
   }
 
+  async function onTranscripts(rebuild = false) {
+    setTxLoading(true);
+    setTxStatus(null);
+    try {
+      const url = rebuild ? `/api/transcripts?rebuild=1` : `/api/transcripts`;
+      const res = await fetch(url, { method: "POST" });
+      const body = (await res.json()) as
+        | {
+            processed: number;
+            errors: number;
+            skipped: number;
+            cleared: number;
+          }
+        | { error: string };
+      if (!res.ok || "error" in body) {
+        const msg = "error" in body ? body.error : `HTTP ${res.status}`;
+        setTxStatus(`error: ${msg}`);
+        return;
+      }
+      const clearedPart = body.cleared > 0 ? `cleared ${body.cleared}, ` : "";
+      const skippedPart = body.skipped > 0 ? `, ${body.skipped} skipped` : "";
+      const suffix =
+        body.processed > 0
+          ? " → click Embed to refresh block vectors, Process chunks to embed transcript passages"
+          : "";
+      setTxStatus(
+        body.processed === 0 && body.errors === 0 && body.skipped === 0
+          ? `${clearedPart}nothing pending`
+          : `${clearedPart}fetched ${body.processed}, ${body.errors} error${body.errors === 1 ? "" : "s"}${skippedPart}${suffix}`,
+      );
+    } catch (err) {
+      setTxStatus(
+        `error: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    } finally {
+      setTxLoading(false);
+    }
+  }
+
   async function onProcessChunks() {
     setChunking(true);
     setChunkStatus(null);
@@ -351,6 +406,66 @@ export default function Page() {
     }
   }
 
+  async function loadChannels() {
+    setChannelsLoading(true);
+    setChannelsError(null);
+    try {
+      const res = await fetch(`/api/channels`);
+      const body = (await res.json()) as
+        | { channels: IndexedChannel[] }
+        | { error: string };
+      if (!res.ok || "error" in body) {
+        const msg = "error" in body ? body.error : `HTTP ${res.status}`;
+        throw new Error(msg);
+      }
+      setChannels(body.channels);
+    } catch (err) {
+      setChannelsError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setChannelsLoading(false);
+    }
+  }
+
+  function onToggleFilterPanel() {
+    const next = !filterOpen;
+    setFilterOpen(next);
+    if (next && channels === null && !channelsLoading) {
+      loadChannels();
+    }
+  }
+
+  function onToggleChannel(id: number) {
+    setSelectedChannelIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function onSelectAllChannels() {
+    if (!channels) return;
+    setSelectedChannelIds(
+      new Set(channels.filter((c) => c.block_count > 0).map((c) => c.id)),
+    );
+  }
+
+  function onClearChannels() {
+    setSelectedChannelIds(new Set());
+  }
+
+  function channelFilterParam(): string {
+    if (selectedChannelIds.size === 0) return "";
+    return `&channels=${[...selectedChannelIds].join(",")}`;
+  }
+
+  function selectedChannelLabel(): string {
+    const n = selectedChannelIds.size;
+    if (n === 0) return "All channels";
+    if (n === 1) return "1 channel selected";
+    return `${n} channels selected`;
+  }
+
   async function onSearch(e: React.FormEvent) {
     e.preventDefault();
     if (!query.trim()) return;
@@ -362,7 +477,7 @@ export default function Page() {
     setSearchCaptionOpen(false);
     setSearchTranscriptionOpen(false);
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`);
+      const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}${channelFilterParam()}`);
       const body = (await res.json()) as
         | { query: string; hits: SearchHit[] }
         | { error: string };
@@ -400,7 +515,11 @@ export default function Page() {
       const res = await fetch(`/api/search`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ image_data_url: dataUrl }),
+        body: JSON.stringify(
+          selectedChannelIds.size > 0
+            ? { image_data_url: dataUrl, channels: [...selectedChannelIds] }
+            : { image_data_url: dataUrl },
+        ),
       });
       const body = (await res.json()) as
         | {
@@ -559,6 +678,24 @@ export default function Page() {
         </button>
         <button
           type="button"
+          onClick={() => onTranscripts(false)}
+          disabled={txLoading}
+          title="fetch YouTube transcripts via yt-dlp (default 100)"
+          className="rounded border border-neutral-900 px-4 py-2 text-neutral-900 disabled:opacity-50"
+        >
+          {txLoading ? "…" : "Read YouTube transcripts"}
+        </button>
+        <button
+          type="button"
+          onClick={() => onTranscripts(true)}
+          disabled={txLoading}
+          title="clear block_transcripts and re-fetch via yt-dlp"
+          className="rounded border border-red-700 px-3 py-2 text-red-700 disabled:opacity-50"
+        >
+          {txLoading ? "…" : "Re-read transcripts"}
+        </button>
+        <button
+          type="button"
           onClick={onProcessChunks}
           disabled={chunking}
           title="build and embed chunks for long link content"
@@ -605,6 +742,15 @@ export default function Page() {
           {extStatus}
         </p>
       )}
+      {txStatus && (
+        <p
+          className={`mt-2 text-sm ${
+            txStatus.startsWith("error") ? "text-red-600" : "text-neutral-700"
+          }`}
+        >
+          {txStatus}
+        </p>
+      )}
       {chunkStatus && (
         <p
           className={`mt-2 text-sm ${
@@ -614,6 +760,107 @@ export default function Page() {
           {chunkStatus}
         </p>
       )}
+
+      <div className="mt-8">
+        <button
+          type="button"
+          onClick={onToggleFilterPanel}
+          className="inline-flex items-center gap-1 rounded border border-neutral-300 bg-white px-3 py-1.5 text-sm text-neutral-800 hover:border-neutral-500"
+          aria-expanded={filterOpen}
+        >
+          {selectedChannelLabel()}
+          <span aria-hidden="true">{filterOpen ? "▴" : "▾"}</span>
+        </button>
+        {filterOpen && (
+          <div className="mt-2 rounded border border-neutral-300 bg-white p-3">
+            <div className="mb-2 flex items-center gap-2 text-sm">
+              <span className="font-medium text-neutral-800">
+                Filter by channel
+              </span>
+              <button
+                type="button"
+                onClick={onSelectAllChannels}
+                disabled={!channels || channels.length === 0}
+                className="rounded border border-neutral-300 px-2 py-0.5 text-xs text-neutral-700 hover:border-neutral-500 disabled:opacity-50"
+              >
+                select all
+              </button>
+              <button
+                type="button"
+                onClick={onClearChannels}
+                disabled={selectedChannelIds.size === 0}
+                className="rounded border border-neutral-300 px-2 py-0.5 text-xs text-neutral-700 hover:border-neutral-500 disabled:opacity-50"
+              >
+                clear
+              </button>
+              <button
+                type="button"
+                onClick={() => loadChannels()}
+                disabled={channelsLoading}
+                title="refresh channel list"
+                className="ml-auto rounded border border-neutral-300 px-2 py-0.5 text-xs text-neutral-700 hover:border-neutral-500 disabled:opacity-50"
+              >
+                {channelsLoading ? "…" : "↻"}
+              </button>
+            </div>
+            {channelsError && (
+              <p className="mb-2 text-sm text-red-600">
+                Couldn&apos;t load channels: {channelsError}.{" "}
+                <button
+                  type="button"
+                  onClick={() => loadChannels()}
+                  className="underline"
+                >
+                  retry
+                </button>
+              </p>
+            )}
+            {!channelsError && channelsLoading && channels === null && (
+              <p className="text-sm text-neutral-500">Loading channels…</p>
+            )}
+            {!channelsError && channels !== null && channels.length === 0 && (
+              <p className="text-sm text-neutral-500">
+                No channels indexed yet. Run Save above first.
+              </p>
+            )}
+            {channels !== null && channels.length > 0 && (
+              <ul className="max-h-80 overflow-y-auto pr-1">
+                {channels.map((c) => {
+                  const disabled = c.block_count === 0;
+                  const checked = selectedChannelIds.has(c.id);
+                  return (
+                    <li key={c.id}>
+                      <label
+                        className={`flex items-center gap-2 py-0.5 text-sm ${
+                          disabled
+                            ? "text-neutral-400"
+                            : "text-neutral-800"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          disabled={disabled}
+                          onChange={() => onToggleChannel(c.id)}
+                        />
+                        <span className="truncate">{c.title ?? "(untitled)"}</span>
+                        <span className="ml-auto text-neutral-500">
+                          ({c.block_count})
+                        </span>
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            <p className="mt-2 text-xs text-neutral-500">
+              {selectedChannelIds.size === 0
+                ? "Searching all channels."
+                : `${selectedChannelIds.size} channel${selectedChannelIds.size === 1 ? "" : "s"} selected.`}
+            </p>
+          </div>
+        )}
+      </div>
 
       <form onSubmit={onSearch} className="mt-8 flex items-center gap-2">
         {searchImage && (
@@ -725,6 +972,33 @@ export default function Page() {
             </div>
           )}
         </div>
+      )}
+      {hits && hits.length > 0 && selectedChannelIds.size > 0 && (
+        <p className="mt-3 text-sm text-neutral-600">
+          Filtered by {selectedChannelIds.size} channel
+          {selectedChannelIds.size === 1 ? "" : "s"}
+          {channels && (
+            <>
+              :{" "}
+              <span className="text-neutral-800">
+                {channels
+                  .filter((c) => selectedChannelIds.has(c.id))
+                  .map((c) => c.title ?? "(untitled)")
+                  .slice(0, 4)
+                  .join(", ")}
+                {selectedChannelIds.size > 4 ? ", …" : ""}
+              </span>
+            </>
+          )}
+          .{" "}
+          <button
+            type="button"
+            onClick={onClearChannels}
+            className="underline"
+          >
+            clear filter
+          </button>
+        </p>
       )}
       {hits && hits.length === 0 && (
         <p className="mt-2 text-sm text-neutral-500">no results</p>

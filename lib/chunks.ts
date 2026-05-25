@@ -6,6 +6,7 @@ export const LINK_CHUNK_MIN_CHARS = 8000;
 export const LINK_CHUNK_MAX_CHARS = 3000;
 export const LINK_CHUNK_OVERLAP_CHARS = 400;
 export const EXTERNAL_CONTENT_CHUNK_TYPE = "external_content";
+export const TRANSCRIPT_CHUNK_TYPE = "transcript";
 
 const BATCH_SIZE = 100;
 
@@ -203,6 +204,61 @@ function rebuildAllLinkChunks(db: Database.Database): { chunked: number; cleared
   return { chunked: rebuildMissingLinkChunks(db), cleared: existing.c };
 }
 
+function rebuildMissingTranscriptChunks(db: Database.Database): number {
+  const rows = db
+    .prepare(
+      `SELECT t.block_id, t.transcript_text AS content_text
+         FROM block_transcripts t
+        WHERE t.transcript_text IS NOT NULL
+          AND length(t.transcript_text) > ?
+          AND NOT EXISTS (
+            SELECT 1 FROM block_chunks bc
+             WHERE bc.block_id = t.block_id
+               AND bc.chunk_type = ?
+          )
+        ORDER BY t.block_id`,
+    )
+    .all(LINK_CHUNK_MIN_CHARS, TRANSCRIPT_CHUNK_TYPE) as LinkContentRow[];
+
+  let chunked = 0;
+  const tx = db.transaction((items: LinkContentRow[]) => {
+    for (const row of items) {
+      chunked += rebuildChunksForBlock(
+        db,
+        row.block_id,
+        TRANSCRIPT_CHUNK_TYPE,
+        row.content_text,
+      );
+    }
+  });
+  tx(rows);
+  return chunked;
+}
+
+function rebuildAllTranscriptChunks(
+  db: Database.Database,
+): { chunked: number; cleared: number } {
+  const existing = db
+    .prepare(
+      `SELECT COUNT(*) AS c FROM block_chunks WHERE chunk_type = ?`,
+    )
+    .get(TRANSCRIPT_CHUNK_TYPE) as { c: number };
+
+  db.transaction(() => {
+    db.prepare(
+      `DELETE FROM vec_block_chunks
+        WHERE chunk_id IN (
+          SELECT id FROM block_chunks WHERE chunk_type = ?
+        )`,
+    ).run(TRANSCRIPT_CHUNK_TYPE);
+    db.prepare(`DELETE FROM block_chunks WHERE chunk_type = ?`).run(
+      TRANSCRIPT_CHUNK_TYPE,
+    );
+  })();
+
+  return { chunked: rebuildMissingTranscriptChunks(db), cleared: existing.c };
+}
+
 async function embedPendingChunks(db: Database.Database): Promise<{
   embedded: number;
   skipped: number;
@@ -259,15 +315,18 @@ export async function processChunks(
   opts: { rebuild?: boolean } = {},
 ): Promise<ChunkResult> {
   const db = getDb();
-  const { chunked, cleared } = opts.rebuild
+  const ext = opts.rebuild
     ? rebuildAllLinkChunks(db)
     : { chunked: rebuildMissingLinkChunks(db), cleared: 0 };
+  const tx = opts.rebuild
+    ? rebuildAllTranscriptChunks(db)
+    : { chunked: rebuildMissingTranscriptChunks(db), cleared: 0 };
   const embedded = await embedPendingChunks(db);
   return {
-    chunked,
+    chunked: ext.chunked + tx.chunked,
     embedded: embedded.embedded,
     skipped: embedded.skipped,
     batches: embedded.batches,
-    cleared,
+    cleared: ext.cleared + tx.cleared,
   };
 }

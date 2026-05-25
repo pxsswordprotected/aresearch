@@ -92,6 +92,19 @@ CREATE TABLE block_link_content (
     FOREIGN KEY (block_id) REFERENCES blocks(id)
 );
 
+-- block_transcripts stores YouTube subtitles extracted via yt-dlp for any
+-- block whose source_url points at a YouTube host (Embed and the rare Text
+-- outlier). See lib/transcripts.ts.
+CREATE TABLE block_transcripts (
+    block_id INTEGER PRIMARY KEY,
+    transcript_text TEXT,
+    source TEXT,
+    language TEXT,
+    fetched_at TEXT,
+    error TEXT,
+    FOREIGN KEY (block_id) REFERENCES blocks(id)
+);
+
 CREATE TABLE block_chunks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     block_id INTEGER NOT NULL,
