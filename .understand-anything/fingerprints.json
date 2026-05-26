@@ -1,0 +1,1972 @@
+{
+  "version": "1.0.0",
+  "gitCommitHash": "8871855d7cd6de8ef5022aeb7013ef899d87910d",
+  "generatedAt": "2026-05-26T15:13:35.697Z",
+  "files": {
+    ".env.example": {
+      "filePath": ".env.example",
+      "contentHash": "0e4abfb78762bd204591ea022313cbead555373b170da68424f74371a12e8a9b",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 6,
+      "hasStructuralAnalysis": true
+    },
+    ".github/workflows/ci.yml": {
+      "filePath": ".github/workflows/ci.yml",
+      "contentHash": "a8ae0ed365aa120c4d2e384d09ae2ca581702b0d878dfdef1cdf2cdf4b74bbe0",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 22,
+      "hasStructuralAnalysis": true
+    },
+    "app/api/arena/ingest/route.ts": {
+      "filePath": "app/api/arena/ingest/route.ts",
+      "contentHash": "f9a8374e6d939d7015c8bc609484fb2c439bd8ea4a356226e66eaecec12fe6be",
+      "functions": [
+        {
+          "name": "POST",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 32
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "@/lib/arena",
+          "specifiers": [
+            "ArenaError",
+            "parseUserSlug"
+          ]
+        },
+        {
+          "source": "@/lib/ingest",
+          "specifiers": [
+            "ingestUser",
+            "logIngestError"
+          ]
+        }
+      ],
+      "exports": [
+        "runtime",
+        "POST"
+      ],
+      "totalLines": 39,
+      "hasStructuralAnalysis": true
+    },
+    "app/api/arena/route.ts": {
+      "filePath": "app/api/arena/route.ts",
+      "contentHash": "5f90772ad327c2bc54c20e1e40150f9f64d1f9ae2547b290a9a90b1d08e11140",
+      "functions": [
+        {
+          "name": "blockTitle",
+          "params": [
+            "b"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "compareBlocks",
+          "params": [
+            "a",
+            "b"
+          ],
+          "returnType": "number",
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "GET",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 102
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "@/lib/arena",
+          "specifiers": [
+            "ArenaError",
+            "getChannelContents",
+            "getUser",
+            "getUserChannels",
+            "isArenaBlock",
+            "parseUserSlug",
+            "ArenaBlock"
+          ]
+        }
+      ],
+      "exports": [
+        "runtime",
+        "GET"
+      ],
+      "totalLines": 152,
+      "hasStructuralAnalysis": true
+    },
+    "app/api/channels/route.ts": {
+      "filePath": "app/api/channels/route.ts",
+      "contentHash": "5f8f0508098e303ef3ae0aabf07065d354faf28bcabc26f13a2fa71aa09fc472",
+      "functions": [
+        {
+          "name": "GET",
+          "params": [],
+          "exported": true,
+          "lineCount": 14
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        }
+      ],
+      "exports": [
+        "runtime",
+        "GET"
+      ],
+      "totalLines": 34,
+      "hasStructuralAnalysis": true
+    },
+    "app/api/chunks/route.ts": {
+      "filePath": "app/api/chunks/route.ts",
+      "contentHash": "a4ab5ff8dde4ae91f97bd046522b6158430bec70c3ff5d01a6acad7e4b053788",
+      "functions": [
+        {
+          "name": "POST",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 11
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "@/lib/chunks",
+          "specifiers": [
+            "processChunks"
+          ]
+        }
+      ],
+      "exports": [
+        "runtime",
+        "maxDuration",
+        "POST"
+      ],
+      "totalLines": 18,
+      "hasStructuralAnalysis": true
+    },
+    "app/api/embed/route.ts": {
+      "filePath": "app/api/embed/route.ts",
+      "contentHash": "50756128d4c36f57184256fc160bb75a933dfd704bd826d1a84a0ecb315efd78",
+      "functions": [
+        {
+          "name": "POST",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 11
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "@/lib/embed-blocks",
+          "specifiers": [
+            "embedPendingBlocks"
+          ]
+        }
+      ],
+      "exports": [
+        "runtime",
+        "maxDuration",
+        "POST"
+      ],
+      "totalLines": 18,
+      "hasStructuralAnalysis": true
+    },
+    "app/api/external-content/route.ts": {
+      "filePath": "app/api/external-content/route.ts",
+      "contentHash": "4459ebf51ca8a69d59ecbc76ecd251892748b01e0e7bbb0889f707abc5a75f05",
+      "functions": [
+        {
+          "name": "POST",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 13
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "@/lib/external-content",
+          "specifiers": [
+            "extractPendingExternalContent"
+          ]
+        }
+      ],
+      "exports": [
+        "runtime",
+        "maxDuration",
+        "POST"
+      ],
+      "totalLines": 20,
+      "hasStructuralAnalysis": true
+    },
+    "app/api/ocr/route.ts": {
+      "filePath": "app/api/ocr/route.ts",
+      "contentHash": "e6456773100f13a8b1717844f99f55b1d9df9ad75db36578ed87ed32eb39676f",
+      "functions": [
+        {
+          "name": "POST",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 13
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "@/lib/ocr",
+          "specifiers": [
+            "ocrPendingImages"
+          ]
+        }
+      ],
+      "exports": [
+        "runtime",
+        "maxDuration",
+        "POST"
+      ],
+      "totalLines": 20,
+      "hasStructuralAnalysis": true
+    },
+    "app/api/recommend-channel/route.ts": {
+      "filePath": "app/api/recommend-channel/route.ts",
+      "contentHash": "94d1d80c78d0ef762b5ac4d1226aa82fbb603fd613d50742e45d9c78b28b520f",
+      "functions": [
+        {
+          "name": "runChannelRec",
+          "params": [
+            "qText",
+            "knnK",
+            "channelLimit"
+          ],
+          "returnType": "Promise<ChannelRecResult>",
+          "exported": false,
+          "lineCount": 132
+        },
+        {
+          "name": "POST",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 68
+        },
+        {
+          "name": "clampInt",
+          "params": [
+            "raw",
+            "def",
+            "lo",
+            "hi"
+          ],
+          "returnType": "number",
+          "exported": false,
+          "lineCount": 10
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        },
+        {
+          "source": "@/lib/embeddings",
+          "specifiers": [
+            "embed"
+          ]
+        },
+        {
+          "source": "@/lib/vision-query",
+          "specifiers": [
+            "ImageQueryError",
+            "QUERY_IMAGE_MAX_DATA_URL_CHARS",
+            "captionImageForQuery"
+          ]
+        }
+      ],
+      "exports": [
+        "runtime",
+        "POST"
+      ],
+      "totalLines": 291,
+      "hasStructuralAnalysis": true
+    },
+    "app/api/search/route.ts": {
+      "filePath": "app/api/search/route.ts",
+      "contentHash": "5271e1aaa481acccd3c8a271369fbd22b7e0d9bc52fad61df60a17c3597269a6",
+      "functions": [
+        {
+          "name": "GET",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "POST",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 47
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "@/lib/search-core",
+          "specifiers": [
+            "parseChannelFilter",
+            "parseLimit",
+            "runSearch"
+          ]
+        },
+        {
+          "source": "@/lib/vision-query",
+          "specifiers": [
+            "ImageQueryError",
+            "QUERY_IMAGE_MAX_DATA_URL_CHARS",
+            "captionImageForQuery"
+          ]
+        }
+      ],
+      "exports": [
+        "runtime",
+        "GET",
+        "POST"
+      ],
+      "totalLines": 84,
+      "hasStructuralAnalysis": true
+    },
+    "app/api/transcripts/route.ts": {
+      "filePath": "app/api/transcripts/route.ts",
+      "contentHash": "dcdbe1423f3d4b1a0795e525080a1eead5d103778f5c9637123647998bdcad53",
+      "functions": [
+        {
+          "name": "POST",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 15
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "@/lib/transcripts",
+          "specifiers": [
+            "extractPendingTranscripts"
+          ]
+        }
+      ],
+      "exports": [
+        "runtime",
+        "maxDuration",
+        "POST"
+      ],
+      "totalLines": 22,
+      "hasStructuralAnalysis": true
+    },
+    "app/globals.css": {
+      "filePath": "app/globals.css",
+      "contentHash": "42070e0b45bb201b2b838a52aaaa6e965f964e0b542d97f1fe517fe59c4b75a8",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 2,
+      "hasStructuralAnalysis": false
+    },
+    "app/layout.tsx": {
+      "filePath": "app/layout.tsx",
+      "contentHash": "899ec776add620d45b9584fc1dad44420a22c5b3e934b85571c79793c6198d39",
+      "functions": [
+        {
+          "name": "RootLayout",
+          "params": [
+            "{ children }"
+          ],
+          "exported": true,
+          "lineCount": 9
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next",
+          "specifiers": [
+            "Metadata"
+          ]
+        },
+        {
+          "source": "./globals.css",
+          "specifiers": []
+        }
+      ],
+      "exports": [
+        "metadata",
+        "RootLayout"
+      ],
+      "totalLines": 18,
+      "hasStructuralAnalysis": true
+    },
+    "app/page.tsx": {
+      "filePath": "app/page.tsx",
+      "contentHash": "c02268ac6a97cedaefadf3ed0747e0053087dc8a541093242d37cd85d1a6d44a",
+      "functions": [
+        {
+          "name": "readFileAsDataUrl",
+          "params": [
+            "file"
+          ],
+          "returnType": "Promise<string>",
+          "exported": false,
+          "lineCount": 13
+        },
+        {
+          "name": "Page",
+          "params": [],
+          "exported": true,
+          "lineCount": 1270
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useRef",
+            "useState"
+          ]
+        },
+        {
+          "source": "@/lib/query-image-limits",
+          "specifiers": [
+            "QUERY_IMAGE_MAX_BYTES"
+          ]
+        }
+      ],
+      "exports": [
+        "Page"
+      ],
+      "totalLines": 1380,
+      "hasStructuralAnalysis": true
+    },
+    "data/schema.sql": {
+      "filePath": "data/schema.sql",
+      "contentHash": "ad5c9fa6de3a311ed592e48a99692c6cd21a164be7612ba8d5c4723e66c1dae2",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 128,
+      "hasStructuralAnalysis": true
+    },
+    "evals/queries.jsonl": {
+      "filePath": "evals/queries.jsonl",
+      "contentHash": "f6bb668238b8882a344599bd11d8a258c7570fbb9a3efd16fe101d7e66303a70",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 16,
+      "hasStructuralAnalysis": false
+    },
+    "lib/arena.ts": {
+      "filePath": "lib/arena.ts",
+      "contentHash": "dfcb8121b71cb5d4cd77b57ff41b3e9059b565f2ebaf90f47b764c2d76792d38",
+      "functions": [
+        {
+          "name": "parseUserSlug",
+          "params": [
+            "input"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 29
+        },
+        {
+          "name": "arenaFetch",
+          "params": [
+            "path",
+            "init"
+          ],
+          "returnType": "Promise<T>",
+          "exported": false,
+          "lineCount": 32
+        },
+        {
+          "name": "getUser",
+          "params": [
+            "slug"
+          ],
+          "returnType": "Promise<ArenaUser>",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "getUserChannels",
+          "params": [
+            "slug",
+            "opts"
+          ],
+          "returnType": "Promise<ArenaList<ArenaChannel>>",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "getAllUserChannels",
+          "params": [
+            "slug"
+          ],
+          "returnType": "Promise<ArenaChannel[]>",
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "getChannelContents",
+          "params": [
+            "idOrSlug",
+            "opts"
+          ],
+          "returnType": "Promise<ArenaList<ArenaContentItem>>",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "isArenaChannel",
+          "params": [
+            "x"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "isArenaBlock",
+          "params": [
+            "x"
+          ],
+          "exported": true,
+          "lineCount": 3
+        }
+      ],
+      "classes": [
+        {
+          "name": "ArenaError",
+          "methods": [
+            "constructor"
+          ],
+          "properties": [
+            "status",
+            "code"
+          ],
+          "exported": true,
+          "lineCount": 10
+        }
+      ],
+      "imports": [],
+      "exports": [
+        "ArenaError",
+        "parseUserSlug",
+        "getUser",
+        "getUserChannels",
+        "getAllUserChannels",
+        "getChannelContents",
+        "isArenaChannel",
+        "isArenaBlock"
+      ],
+      "totalLines": 243,
+      "hasStructuralAnalysis": true
+    },
+    "lib/chunks.ts": {
+      "filePath": "lib/chunks.ts",
+      "contentHash": "0be66a83adb009f7740b67e1af7ca2f4bf90c58ffd0c281ca2a9594df026c48c",
+      "functions": [
+        {
+          "name": "findChunkEnd",
+          "params": [
+            "text",
+            "start",
+            "hardEnd"
+          ],
+          "returnType": "number",
+          "exported": false,
+          "lineCount": 24
+        },
+        {
+          "name": "chunkText",
+          "params": [
+            "text",
+            "opts"
+          ],
+          "returnType": "Chunk[]",
+          "exported": true,
+          "lineCount": 35
+        },
+        {
+          "name": "deleteChunkVectorsForBlock",
+          "params": [
+            "db",
+            "blockId",
+            "chunkType"
+          ],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 13
+        },
+        {
+          "name": "clearChunksForBlock",
+          "params": [
+            "db",
+            "blockId",
+            "chunkType"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "rebuildChunksForBlock",
+          "params": [
+            "db",
+            "blockId",
+            "chunkType",
+            "text"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 29
+        },
+        {
+          "name": "rebuildMissingLinkChunks",
+          "params": [
+            "db"
+          ],
+          "returnType": "number",
+          "exported": false,
+          "lineCount": 30
+        },
+        {
+          "name": "rebuildAllLinkChunks",
+          "params": [
+            "db"
+          ],
+          "returnType": "{ chunked: number; cleared: number }",
+          "exported": false,
+          "lineCount": 21
+        },
+        {
+          "name": "rebuildMissingTranscriptChunks",
+          "params": [
+            "db"
+          ],
+          "returnType": "number",
+          "exported": false,
+          "lineCount": 30
+        },
+        {
+          "name": "rebuildAllTranscriptChunks",
+          "params": [
+            "db"
+          ],
+          "returnType": "{ chunked: number; cleared: number }",
+          "exported": false,
+          "lineCount": 23
+        },
+        {
+          "name": "embedPendingChunks",
+          "params": [
+            "db"
+          ],
+          "returnType": "Promise<{\n  embedded: number;\n  skipped: number;\n  batches: number;\n}>",
+          "exported": false,
+          "lineCount": 51
+        },
+        {
+          "name": "processChunks",
+          "params": [
+            "opts"
+          ],
+          "returnType": "Promise<ChunkResult>",
+          "exported": true,
+          "lineCount": 19
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "better-sqlite3",
+          "specifiers": [
+            "Database"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        },
+        {
+          "source": "@/lib/embeddings",
+          "specifiers": [
+            "EMBEDDING_MODEL",
+            "embedMany"
+          ]
+        }
+      ],
+      "exports": [
+        "LINK_CHUNK_MIN_CHARS",
+        "LINK_CHUNK_MAX_CHARS",
+        "LINK_CHUNK_OVERLAP_CHARS",
+        "EXTERNAL_CONTENT_CHUNK_TYPE",
+        "TRANSCRIPT_CHUNK_TYPE",
+        "chunkText",
+        "clearChunksForBlock",
+        "rebuildChunksForBlock",
+        "processChunks"
+      ],
+      "totalLines": 333,
+      "hasStructuralAnalysis": true
+    },
+    "lib/db.ts": {
+      "filePath": "lib/db.ts",
+      "contentHash": "0fc25069d02f34a1a3c467d187cef3761c1877edf1c5a5924b99748c6eaf22e8",
+      "functions": [
+        {
+          "name": "getDb",
+          "params": [],
+          "returnType": "Database.Database",
+          "exported": true,
+          "lineCount": 117
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "better-sqlite3",
+          "specifiers": [
+            "Database"
+          ]
+        },
+        {
+          "source": "sqlite-vec",
+          "specifiers": [
+            "* as sqliteVec"
+          ]
+        },
+        {
+          "source": "node:fs",
+          "specifiers": [
+            "fs"
+          ]
+        },
+        {
+          "source": "node:path",
+          "specifiers": [
+            "path"
+          ]
+        }
+      ],
+      "exports": [
+        "EMBEDDING_DIM",
+        "getDb"
+      ],
+      "totalLines": 127,
+      "hasStructuralAnalysis": true
+    },
+    "lib/embed-blocks.ts": {
+      "filePath": "lib/embed-blocks.ts",
+      "contentHash": "47176193e0844be5b6ccbc014a73e4b58534f1a52ba2a07a0e51f48f765ce2e4",
+      "functions": [
+        {
+          "name": "embedPendingBlocks",
+          "params": [
+            "opts"
+          ],
+          "returnType": "Promise<EmbedResult>",
+          "exported": true,
+          "lineCount": 65
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        },
+        {
+          "source": "@/lib/embeddings",
+          "specifiers": [
+            "EMBEDDING_MODEL",
+            "embedMany"
+          ]
+        }
+      ],
+      "exports": [
+        "embedPendingBlocks"
+      ],
+      "totalLines": 91,
+      "hasStructuralAnalysis": true
+    },
+    "lib/embeddings.ts": {
+      "filePath": "lib/embeddings.ts",
+      "contentHash": "7abbc5c4de93920a7decdd124179f7b36b8a5a4cc4462f7b218e93e047ad32d3",
+      "functions": [
+        {
+          "name": "client",
+          "params": [],
+          "returnType": "OpenAI",
+          "exported": false,
+          "lineCount": 7
+        },
+        {
+          "name": "embed",
+          "params": [
+            "input"
+          ],
+          "returnType": "Promise<Float32Array>",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "embedMany",
+          "params": [
+            "inputs"
+          ],
+          "returnType": "Promise<Float32Array[]>",
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "openai",
+          "specifiers": [
+            "OpenAI"
+          ]
+        }
+      ],
+      "exports": [
+        "EMBEDDING_MODEL",
+        "embed",
+        "embedMany"
+      ],
+      "totalLines": 31,
+      "hasStructuralAnalysis": true
+    },
+    "lib/external-content.ts": {
+      "filePath": "lib/external-content.ts",
+      "contentHash": "a6b6d246d281030ba7de4bc830f3ea75c91ca67e24de2af19cfc0386ed3c0458",
+      "functions": [
+        {
+          "name": "isCloudflareChallenge",
+          "params": [
+            "head"
+          ],
+          "returnType": "boolean",
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "normalizeHost",
+          "params": [
+            "host"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "classifyUrl",
+          "params": [
+            "rawUrl"
+          ],
+          "returnType": "{ ok: true; url: URL } | { ok: false; reason: string }",
+          "exported": false,
+          "lineCount": 22
+        },
+        {
+          "name": "rejectPostFetch",
+          "params": [
+            "body"
+          ],
+          "returnType": "string | null",
+          "exported": false,
+          "lineCount": 9
+        },
+        {
+          "name": "envInt",
+          "params": [
+            "name",
+            "def"
+          ],
+          "returnType": "number",
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "sleep",
+          "params": [
+            "ms"
+          ],
+          "returnType": "Promise<void>",
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "fetchOne",
+          "params": [
+            "url",
+            "timeoutMs"
+          ],
+          "returnType": "Promise<FetchResult>",
+          "exported": false,
+          "lineCount": 37
+        },
+        {
+          "name": "fetchWithRetry",
+          "params": [
+            "url",
+            "timeoutMs"
+          ],
+          "returnType": "Promise<FetchResult>",
+          "exported": false,
+          "lineCount": 15
+        },
+        {
+          "name": "runPool",
+          "params": [
+            "items",
+            "limit",
+            "worker"
+          ],
+          "returnType": "Promise<void>",
+          "exported": false,
+          "lineCount": 17
+        },
+        {
+          "name": "extractPendingExternalContent",
+          "params": [
+            "opts"
+          ],
+          "returnType": "Promise<ExternalContentResult>",
+          "exported": true,
+          "lineCount": 278
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        },
+        {
+          "source": "@/lib/search-text",
+          "specifiers": [
+            "buildSearchText"
+          ]
+        },
+        {
+          "source": "@/lib/link-clean",
+          "specifiers": [
+            "cleanLinkMarkdown"
+          ]
+        },
+        {
+          "source": "@/lib/chunks",
+          "specifiers": [
+            "clearChunksForBlock",
+            "EXTERNAL_CONTENT_CHUNK_TYPE",
+            "rebuildChunksForBlock"
+          ]
+        }
+      ],
+      "exports": [
+        "EXTERNAL_CONTENT_EMBED_SLICE_CHARS",
+        "extractPendingExternalContent"
+      ],
+      "totalLines": 507,
+      "hasStructuralAnalysis": true
+    },
+    "lib/ingest.ts": {
+      "filePath": "lib/ingest.ts",
+      "contentHash": "34778c0eec67fdb8f5821770375acf1b6b9fcda98c2ec2088d7d8ab5cd1ab900",
+      "functions": [
+        {
+          "name": "pickRichPlain",
+          "params": [
+            "r"
+          ],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "pickRichHtml",
+          "params": [
+            "r"
+          ],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "runPool",
+          "params": [
+            "items",
+            "limit",
+            "worker"
+          ],
+          "returnType": "Promise<R[]>",
+          "exported": false,
+          "lineCount": 19
+        },
+        {
+          "name": "ingestUser",
+          "params": [
+            "slug"
+          ],
+          "returnType": "Promise<IngestResult>",
+          "exported": true,
+          "lineCount": 309
+        },
+        {
+          "name": "logIngestError",
+          "params": [
+            "slug",
+            "err"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 20
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@/lib/arena",
+          "specifiers": [
+            "ArenaError",
+            "getAllUserChannels",
+            "getChannelContents",
+            "getUser",
+            "isArenaBlock",
+            "ArenaBlock",
+            "ArenaChannel",
+            "ArenaUser"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        },
+        {
+          "source": "@/lib/search-text",
+          "specifiers": [
+            "buildSearchText"
+          ]
+        },
+        {
+          "source": "@/lib/external-content",
+          "specifiers": [
+            "EXTERNAL_CONTENT_EMBED_SLICE_CHARS"
+          ]
+        },
+        {
+          "source": "@/lib/transcripts",
+          "specifiers": [
+            "TRANSCRIPT_EMBED_SLICE_CHARS"
+          ]
+        }
+      ],
+      "exports": [
+        "ingestUser",
+        "logIngestError"
+      ],
+      "totalLines": 399,
+      "hasStructuralAnalysis": true
+    },
+    "lib/link-clean.ts": {
+      "filePath": "lib/link-clean.ts",
+      "contentHash": "3211278ba0512ea2639c9eb1ed19d1932282d2f3b92e09dd174a484239376731",
+      "functions": [
+        {
+          "name": "normalizeHost",
+          "params": [
+            "h"
+          ],
+          "returnType": "string | undefined",
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "computeGithubDropRanges",
+          "params": [
+            "lines"
+          ],
+          "returnType": "Array<[number, number]>",
+          "exported": false,
+          "lineCount": 23
+        },
+        {
+          "name": "cleanLinkMarkdown",
+          "params": [
+            "body",
+            "opts"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 48
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "cleanLinkMarkdown"
+      ],
+      "totalLines": 146,
+      "hasStructuralAnalysis": true
+    },
+    "lib/ocr.ts": {
+      "filePath": "lib/ocr.ts",
+      "contentHash": "26f62d8d2107c26099c9c2e3d0ad0f0a4e12693f9d2941ce40144893f87326b9",
+      "functions": [
+        {
+          "name": "runPool",
+          "params": [
+            "items",
+            "limit",
+            "worker"
+          ],
+          "returnType": "Promise<void>",
+          "exported": false,
+          "lineCount": 17
+        },
+        {
+          "name": "sleep",
+          "params": [
+            "ms"
+          ],
+          "returnType": "Promise<void>",
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "ocrPendingImages",
+          "params": [
+            "opts"
+          ],
+          "returnType": "Promise<OcrResult>",
+          "exported": true,
+          "lineCount": 151
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        },
+        {
+          "source": "@/lib/search-text",
+          "specifiers": [
+            "buildSearchText"
+          ]
+        },
+        {
+          "source": "@/lib/vision",
+          "specifiers": [
+            "VISION_MODEL",
+            "parseVisionResponse",
+            "visionCaption"
+          ]
+        }
+      ],
+      "exports": [
+        "ocrPendingImages"
+      ],
+      "totalLines": 220,
+      "hasStructuralAnalysis": true
+    },
+    "lib/query-image-limits.ts": {
+      "filePath": "lib/query-image-limits.ts",
+      "contentHash": "9acf2198368c73676083b1df8e2658940485eb19a8e81180e93338725ad2ac7a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "QUERY_IMAGE_MAX_BYTES",
+        "QUERY_IMAGE_MAX_DATA_URL_CHARS"
+      ],
+      "totalLines": 15,
+      "hasStructuralAnalysis": true
+    },
+    "lib/search-core.ts": {
+      "filePath": "lib/search-core.ts",
+      "contentHash": "80ab22685d0d4361c4c1d820f2f215a7b3e8f3d89050a788f646aa169a580185",
+      "functions": [
+        {
+          "name": "envNum",
+          "params": [
+            "name",
+            "def"
+          ],
+          "returnType": "number",
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "normalize",
+          "params": [
+            "s"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 10
+        },
+        {
+          "name": "tokenize",
+          "params": [
+            "normalizedQ"
+          ],
+          "returnType": "string[]",
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "lexicalAdjustment",
+          "params": [
+            "text",
+            "title",
+            "qNorm",
+            "tokens"
+          ],
+          "returnType": "number",
+          "exported": false,
+          "lineCount": 24
+        },
+        {
+          "name": "chooseBetter",
+          "params": [
+            "existing",
+            "candidate"
+          ],
+          "returnType": "Hit",
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "parseLimit",
+          "params": [
+            "raw"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "parseChannelFilter",
+          "params": [
+            "raw"
+          ],
+          "returnType": "number[] | null",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "runSearch",
+          "params": [
+            "qText",
+            "limit",
+            "channels"
+          ],
+          "returnType": "Promise<Hit[]>",
+          "exported": true,
+          "lineCount": 304
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "./db.ts",
+          "specifiers": [
+            "getDb"
+          ]
+        },
+        {
+          "source": "./embeddings.ts",
+          "specifiers": [
+            "embed"
+          ]
+        }
+      ],
+      "exports": [
+        "parseLimit",
+        "parseChannelFilter",
+        "runSearch"
+      ],
+      "totalLines": 473,
+      "hasStructuralAnalysis": true
+    },
+    "lib/search-text.ts": {
+      "filePath": "lib/search-text.ts",
+      "contentHash": "c124ab59d3a9bb83f84991854f01d9a0778cf3901d1b92cf2ff46230b12cee84",
+      "functions": [
+        {
+          "name": "isFilenameLikeTitle",
+          "params": [
+            "raw"
+          ],
+          "returnType": "boolean",
+          "exported": true,
+          "lineCount": 35
+        },
+        {
+          "name": "heavy",
+          "params": [
+            "s"
+          ],
+          "returnType": "string[]",
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "clean",
+          "params": [
+            "s"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 2
+        },
+        {
+          "name": "buildSearchText",
+          "params": [
+            "input"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 32
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "isFilenameLikeTitle",
+        "buildSearchText"
+      ],
+      "totalLines": 114,
+      "hasStructuralAnalysis": true
+    },
+    "lib/transcripts.test.ts": {
+      "filePath": "lib/transcripts.test.ts",
+      "contentHash": "c80149c3032d39059abdaa182de79ab01d1f66599e936100307fac950afe4018",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "node:test",
+          "specifiers": [
+            "test"
+          ]
+        },
+        {
+          "source": "node:assert/strict",
+          "specifiers": [
+            "assert"
+          ]
+        },
+        {
+          "source": "./vtt.ts",
+          "specifiers": [
+            "parseVtt"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 104,
+      "hasStructuralAnalysis": true
+    },
+    "lib/transcripts.ts": {
+      "filePath": "lib/transcripts.ts",
+      "contentHash": "c47db5769f9b9caec0080037d86239a75baa2c7388d75cc9a71b4f11e596b897",
+      "functions": [
+        {
+          "name": "envInt",
+          "params": [
+            "name",
+            "def"
+          ],
+          "returnType": "number",
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "sleep",
+          "params": [
+            "ms"
+          ],
+          "returnType": "Promise<void>",
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "isYouTubeUrl",
+          "params": [
+            "raw"
+          ],
+          "returnType": "boolean",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "spawnYtDlp",
+          "params": [
+            "url",
+            "outDir",
+            "timeoutMs"
+          ],
+          "returnType": "Promise<{ code: number; stderr: string }>",
+          "exported": false,
+          "lineCount": 71
+        },
+        {
+          "name": "classifyStderr",
+          "params": [
+            "stderr"
+          ],
+          "returnType": "\"persistent\" | \"retryable\"",
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "pickVttFile",
+          "params": [
+            "outDir"
+          ],
+          "returnType": "Promise<{ file: string; auto: boolean; language: string } | null>",
+          "exported": false,
+          "lineCount": 30
+        },
+        {
+          "name": "fetchOne",
+          "params": [
+            "url",
+            "timeoutMs"
+          ],
+          "returnType": "Promise<FetchResult>",
+          "exported": false,
+          "lineCount": 31
+        },
+        {
+          "name": "extractPendingTranscripts",
+          "params": [
+            "opts"
+          ],
+          "returnType": "Promise<TranscriptResult>",
+          "exported": true,
+          "lineCount": 267
+        }
+      ],
+      "classes": [
+        {
+          "name": "YtDlpMissingError",
+          "methods": [],
+          "properties": [],
+          "exported": false,
+          "lineCount": 1
+        }
+      ],
+      "imports": [
+        {
+          "source": "node:child_process",
+          "specifiers": [
+            "spawn"
+          ]
+        },
+        {
+          "source": "node:fs/promises",
+          "specifiers": [
+            "fs"
+          ]
+        },
+        {
+          "source": "node:os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "node:path",
+          "specifiers": [
+            "path"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        },
+        {
+          "source": "@/lib/chunks",
+          "specifiers": [
+            "clearChunksForBlock",
+            "rebuildChunksForBlock",
+            "TRANSCRIPT_CHUNK_TYPE"
+          ]
+        },
+        {
+          "source": "@/lib/search-text",
+          "specifiers": [
+            "buildSearchText"
+          ]
+        },
+        {
+          "source": "@/lib/vtt",
+          "specifiers": [
+            "parseVtt"
+          ]
+        }
+      ],
+      "exports": [
+        "TRANSCRIPT_EMBED_SLICE_CHARS",
+        "isYouTubeUrl",
+        "extractPendingTranscripts"
+      ],
+      "totalLines": 511,
+      "hasStructuralAnalysis": true
+    },
+    "lib/vision-query.ts": {
+      "filePath": "lib/vision-query.ts",
+      "contentHash": "af313d8c43de38af79d16d441f4fd33ae09ae2ebfb05115d510e07c647825cac",
+      "functions": [
+        {
+          "name": "captionImageForQuery",
+          "params": [
+            "dataUrl"
+          ],
+          "returnType": "Promise<ImageQueryCaption>",
+          "exported": true,
+          "lineCount": 31
+        }
+      ],
+      "classes": [
+        {
+          "name": "ImageQueryError",
+          "methods": [
+            "constructor"
+          ],
+          "properties": [
+            "status"
+          ],
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "imports": [
+        {
+          "source": "@/lib/vision",
+          "specifiers": [
+            "parseVisionResponse",
+            "visionCaption"
+          ]
+        },
+        {
+          "source": "@/lib/query-image-limits",
+          "specifiers": [
+            "QUERY_IMAGE_MAX_BYTES",
+            "QUERY_IMAGE_MAX_DATA_URL_CHARS"
+          ]
+        }
+      ],
+      "exports": [
+        "QUERY_IMAGE_MAX_BYTES",
+        "QUERY_IMAGE_MAX_DATA_URL_CHARS",
+        "ImageQueryError",
+        "captionImageForQuery"
+      ],
+      "totalLines": 69,
+      "hasStructuralAnalysis": true
+    },
+    "lib/vision.ts": {
+      "filePath": "lib/vision.ts",
+      "contentHash": "f453d5670d8ecf2c9e49d1fd4af943d846817a9fc9cc07aabfeb1239769558bc",
+      "functions": [
+        {
+          "name": "visionClient",
+          "params": [],
+          "returnType": "OpenAI",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "visionCaption",
+          "params": [
+            "url"
+          ],
+          "returnType": "Promise<string>",
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "parseVisionResponse",
+          "params": [
+            "raw"
+          ],
+          "returnType": "{\n  ocr_text: string;\n  ocr_summary: string | null;\n}",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "cleanTranscription",
+          "params": [
+            "s"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 8
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "openai",
+          "specifiers": [
+            "OpenAI"
+          ]
+        }
+      ],
+      "exports": [
+        "VISION_MODEL",
+        "VISION_PROMPT",
+        "visionClient",
+        "visionCaption",
+        "parseVisionResponse"
+      ],
+      "totalLines": 102,
+      "hasStructuralAnalysis": true
+    },
+    "lib/vtt.ts": {
+      "filePath": "lib/vtt.ts",
+      "contentHash": "b92a869bf440e525d5a6cb73e7b2317a7bed2b25b2f7f2acb77e8e80ee266629",
+      "functions": [
+        {
+          "name": "stripCueBody",
+          "params": [
+            "line"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "tokenize",
+          "params": [
+            "text"
+          ],
+          "returnType": "string[]",
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "parseVtt",
+          "params": [
+            "raw"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 74
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "parseVtt"
+      ],
+      "totalLines": 104,
+      "hasStructuralAnalysis": true
+    },
+    "next-env.d.ts": {
+      "filePath": "next-env.d.ts",
+      "contentHash": "85ae5aee75f011967cf2d25cbc342f62d69314e9d925f7f4aa3456fc2cffcca6",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 7,
+      "hasStructuralAnalysis": true
+    },
+    "next.config.ts": {
+      "filePath": "next.config.ts",
+      "contentHash": "8589ba292f01e96ec509c236374e862d65f8cdaa927a2ee5d7e264609a5167f4",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next",
+          "specifiers": [
+            "NextConfig"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 8,
+      "hasStructuralAnalysis": true
+    },
+    "package.json": {
+      "filePath": "package.json",
+      "contentHash": "cd6944f54bcba9780a821a2db5e5ecb926613878293963d619395456e0bdd760",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 34,
+      "hasStructuralAnalysis": true
+    },
+    "postcss.config.mjs": {
+      "filePath": "postcss.config.mjs",
+      "contentHash": "dfac7ac2d86d326a0e5adb024e7943c181393ed17a5fcb8f0315b24c7da6ddde",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 8,
+      "hasStructuralAnalysis": true
+    },
+    "README.md": {
+      "filePath": "README.md",
+      "contentHash": "c9e034c1a38f816aee66484271b251c389d5164543a57c5f760bf08d62803af3",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 38,
+      "hasStructuralAnalysis": true
+    },
+    "scripts/check-stale.ts": {
+      "filePath": "scripts/check-stale.ts",
+      "contentHash": "b663d4c8db91478454a1b6ac827947a5e93d5475f2e2390a81cf969f96690cff",
+      "functions": [
+        {
+          "name": "count",
+          "params": [
+            "db",
+            "sql",
+            "...params"
+          ],
+          "returnType": "number",
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "main",
+          "params": [],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 100
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "../lib/db.ts",
+          "specifiers": [
+            "getDb"
+          ]
+        },
+        {
+          "source": "../lib/embeddings.ts",
+          "specifiers": [
+            "EMBEDDING_MODEL"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 124,
+      "hasStructuralAnalysis": true
+    },
+    "scripts/eval-search.ts": {
+      "filePath": "scripts/eval-search.ts",
+      "contentHash": "944449c25b5252ff8927d1428d91bb6b2f210d1ed00db53e4a591a9e61a27c20",
+      "functions": [
+        {
+          "name": "parseLines",
+          "params": [
+            "raw"
+          ],
+          "returnType": "Row[]",
+          "exported": false,
+          "lineCount": 13
+        },
+        {
+          "name": "matchesChannel",
+          "params": [
+            "hits",
+            "expect"
+          ],
+          "returnType": "Hit | undefined",
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "pad",
+          "params": [
+            "s",
+            "n"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "main",
+          "params": [],
+          "returnType": "Promise<void>",
+          "exported": false,
+          "lineCount": 40
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "node:fs/promises",
+          "specifiers": [
+            "readFile"
+          ]
+        },
+        {
+          "source": "node:path",
+          "specifiers": [
+            "path"
+          ]
+        },
+        {
+          "source": "../lib/search-core.ts",
+          "specifiers": [
+            "runSearch",
+            "Hit"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 85,
+      "hasStructuralAnalysis": true
+    },
+    "tsconfig.json": {
+      "filePath": "tsconfig.json",
+      "contentHash": "fc981d909a7df304fac214b0f17c473ca5079c4e6e8508d7461b4d1a6853339a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 23,
+      "hasStructuralAnalysis": true
+    }
+  }
+}

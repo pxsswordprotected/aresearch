@@ -1,0 +1,18 @@
+# .understandignore — patterns for files/dirs to exclude from analysis
+# Syntax: same as .gitignore.
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+.git/
+.env
+.env.local
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.DS_Store
+tsconfig.tsbuildinfo
+.understand-anything/

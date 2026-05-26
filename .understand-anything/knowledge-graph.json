@@ -1,0 +1,4068 @@
+{
+  "version": "1.0.0",
+  "kind": "codebase",
+  "project": {
+    "name": "aresearch",
+    "languages": [
+      "typescript",
+      "sql",
+      "yaml",
+      "json",
+      "css",
+      "markdown",
+      "javascript"
+    ],
+    "frameworks": [
+      "Next.js",
+      "React",
+      "Tailwind CSS",
+      "SQLite",
+      "sqlite-vec",
+      "OpenAI API"
+    ],
+    "description": "A Next.js App Router application for ingesting Arena blocks and related OCR, transcripts, and external content into SQLite, embedding searchable text with OpenAI, and querying it through a React UI and API routes.",
+    "analyzedAt": "2026-05-26T15:12:32.300Z",
+    "gitCommitHash": "8871855d7cd6de8ef5022aeb7013ef899d87910d"
+  },
+  "nodes": [
+    {
+      "id": "file:app/api/channels/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "app/api/channels/route.ts",
+      "lineRange": [
+        1,
+        33
+      ],
+      "summary": "Next.js API route for /api/channels; exports GET and delegates core work to library modules.",
+      "tags": [
+        "api-handler",
+        "exports",
+        "code"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/channels/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "app/api/channels/route.ts",
+      "lineRange": [
+        20,
+        33
+      ],
+      "summary": "GET request handler for /api/channels.",
+      "tags": [
+        "function",
+        "exported",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "endpoint:app/api/channels/route.ts:GET-/api/channels",
+      "type": "endpoint",
+      "name": "GET /api/channels",
+      "filePath": "app/api/channels/route.ts",
+      "summary": "GET HTTP endpoint implemented by app/api/channels/route.ts.",
+      "tags": [
+        "api-route",
+        "nextjs",
+        "http"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/api/chunks/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "app/api/chunks/route.ts",
+      "lineRange": [
+        1,
+        17
+      ],
+      "summary": "Next.js API route for /api/chunks; exports POST and delegates core work to library modules.",
+      "tags": [
+        "api-handler",
+        "exports",
+        "code"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/chunks/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "app/api/chunks/route.ts",
+      "lineRange": [
+        7,
+        17
+      ],
+      "summary": "POST request handler for /api/chunks.",
+      "tags": [
+        "function",
+        "exported",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "endpoint:app/api/chunks/route.ts:POST-/api/chunks",
+      "type": "endpoint",
+      "name": "POST /api/chunks",
+      "filePath": "app/api/chunks/route.ts",
+      "summary": "POST HTTP endpoint implemented by app/api/chunks/route.ts.",
+      "tags": [
+        "api-route",
+        "nextjs",
+        "http"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/api/embed/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "app/api/embed/route.ts",
+      "lineRange": [
+        1,
+        17
+      ],
+      "summary": "Next.js API route for /api/embed; exports POST and delegates core work to library modules.",
+      "tags": [
+        "api-handler",
+        "search",
+        "exports"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/embed/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "app/api/embed/route.ts",
+      "lineRange": [
+        7,
+        17
+      ],
+      "summary": "POST request handler for /api/embed.",
+      "tags": [
+        "function",
+        "exported",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "endpoint:app/api/embed/route.ts:POST-/api/embed",
+      "type": "endpoint",
+      "name": "POST /api/embed",
+      "filePath": "app/api/embed/route.ts",
+      "summary": "POST HTTP endpoint implemented by app/api/embed/route.ts.",
+      "tags": [
+        "api-route",
+        "nextjs",
+        "http"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/chunks.ts",
+      "type": "file",
+      "name": "chunks.ts",
+      "filePath": "lib/chunks.ts",
+      "lineRange": [
+        1,
+        332
+      ],
+      "summary": "Library module chunks.ts providing LINK_CHUNK_MIN_CHARS, LINK_CHUNK_MAX_CHARS, LINK_CHUNK_OVERLAP_CHARS, EXTERNAL_CONTENT_CHUNK_TYPE, TRANSCRIPT_CHUNK_TYPE, chunkText, clearChunksForBlock, rebuildChunksForBlock, processChunks for the application.",
+      "tags": [
+        "service",
+        "exports",
+        "code"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/chunks.ts:findChunkEnd",
+      "type": "function",
+      "name": "findChunkEnd",
+      "filePath": "lib/chunks.ts",
+      "lineRange": [
+        37,
+        60
+      ],
+      "summary": "Function findChunkEnd in lib/chunks.ts, spanning lines 37-60.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/chunks.ts:chunkText",
+      "type": "function",
+      "name": "chunkText",
+      "filePath": "lib/chunks.ts",
+      "lineRange": [
+        62,
+        96
+      ],
+      "summary": "Function chunkText in lib/chunks.ts, spanning lines 62-96.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/chunks.ts:deleteChunkVectorsForBlock",
+      "type": "function",
+      "name": "deleteChunkVectorsForBlock",
+      "filePath": "lib/chunks.ts",
+      "lineRange": [
+        98,
+        110
+      ],
+      "summary": "Function deleteChunkVectorsForBlock in lib/chunks.ts, spanning lines 98-110.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/chunks.ts:clearChunksForBlock",
+      "type": "function",
+      "name": "clearChunksForBlock",
+      "filePath": "lib/chunks.ts",
+      "lineRange": [
+        112,
+        121
+      ],
+      "summary": "Function clearChunksForBlock in lib/chunks.ts, spanning lines 112-121.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/chunks.ts:rebuildChunksForBlock",
+      "type": "function",
+      "name": "rebuildChunksForBlock",
+      "filePath": "lib/chunks.ts",
+      "lineRange": [
+        124,
+        152
+      ],
+      "summary": "Function rebuildChunksForBlock in lib/chunks.ts, spanning lines 124-152.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/chunks.ts:rebuildMissingLinkChunks",
+      "type": "function",
+      "name": "rebuildMissingLinkChunks",
+      "filePath": "lib/chunks.ts",
+      "lineRange": [
+        154,
+        183
+      ],
+      "summary": "Function rebuildMissingLinkChunks in lib/chunks.ts, spanning lines 154-183.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/chunks.ts:rebuildAllLinkChunks",
+      "type": "function",
+      "name": "rebuildAllLinkChunks",
+      "filePath": "lib/chunks.ts",
+      "lineRange": [
+        185,
+        205
+      ],
+      "summary": "Function rebuildAllLinkChunks in lib/chunks.ts, spanning lines 185-205.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/chunks.ts:rebuildMissingTranscriptChunks",
+      "type": "function",
+      "name": "rebuildMissingTranscriptChunks",
+      "filePath": "lib/chunks.ts",
+      "lineRange": [
+        207,
+        236
+      ],
+      "summary": "Function rebuildMissingTranscriptChunks in lib/chunks.ts, spanning lines 207-236.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/chunks.ts:rebuildAllTranscriptChunks",
+      "type": "function",
+      "name": "rebuildAllTranscriptChunks",
+      "filePath": "lib/chunks.ts",
+      "lineRange": [
+        238,
+        260
+      ],
+      "summary": "Function rebuildAllTranscriptChunks in lib/chunks.ts, spanning lines 238-260.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/chunks.ts:embedPendingChunks",
+      "type": "function",
+      "name": "embedPendingChunks",
+      "filePath": "lib/chunks.ts",
+      "lineRange": [
+        262,
+        312
+      ],
+      "summary": "Function embedPendingChunks in lib/chunks.ts, spanning lines 262-312.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/chunks.ts:processChunks",
+      "type": "function",
+      "name": "processChunks",
+      "filePath": "lib/chunks.ts",
+      "lineRange": [
+        314,
+        332
+      ],
+      "summary": "Function processChunks in lib/chunks.ts, spanning lines 314-332.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/db.ts",
+      "type": "file",
+      "name": "db.ts",
+      "filePath": "lib/db.ts",
+      "lineRange": [
+        1,
+        126
+      ],
+      "summary": "SQLite database bootstrapper that opens the local database, loads sqlite-vec, applies schema migrations, and exposes a shared connection.",
+      "tags": [
+        "service",
+        "database",
+        "exports"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/db.ts:getDb",
+      "type": "function",
+      "name": "getDb",
+      "filePath": "lib/db.ts",
+      "lineRange": [
+        10,
+        126
+      ],
+      "summary": "Function getDb in lib/db.ts, spanning lines 10-126.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:lib/embed-blocks.ts",
+      "type": "file",
+      "name": "embed-blocks.ts",
+      "filePath": "lib/embed-blocks.ts",
+      "lineRange": [
+        1,
+        90
+      ],
+      "summary": "Library module embed-blocks.ts providing embedPendingBlocks for the application.",
+      "tags": [
+        "service",
+        "search",
+        "exports"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/embed-blocks.ts:embedPendingBlocks",
+      "type": "function",
+      "name": "embedPendingBlocks",
+      "filePath": "lib/embed-blocks.ts",
+      "lineRange": [
+        26,
+        90
+      ],
+      "summary": "Function embedPendingBlocks in lib/embed-blocks.ts, spanning lines 26-90.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:lib/embeddings.ts",
+      "type": "file",
+      "name": "embeddings.ts",
+      "filePath": "lib/embeddings.ts",
+      "lineRange": [
+        1,
+        30
+      ],
+      "summary": "Library module embeddings.ts providing EMBEDDING_MODEL, embed, embedMany for the application.",
+      "tags": [
+        "service",
+        "search",
+        "exports"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/embeddings.ts:embed",
+      "type": "function",
+      "name": "embed",
+      "filePath": "lib/embeddings.ts",
+      "lineRange": [
+        15,
+        21
+      ],
+      "summary": "Function embed in lib/embeddings.ts, spanning lines 15-21.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/embeddings.ts:embedMany",
+      "type": "function",
+      "name": "embedMany",
+      "filePath": "lib/embeddings.ts",
+      "lineRange": [
+        23,
+        30
+      ],
+      "summary": "Function embedMany in lib/embeddings.ts, spanning lines 23-30.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:scripts/check-stale.ts",
+      "type": "file",
+      "name": "check-stale.ts",
+      "filePath": "scripts/check-stale.ts",
+      "lineRange": [
+        1,
+        123
+      ],
+      "summary": "Local maintenance script for check stale workflows.",
+      "tags": [
+        "typescript",
+        "code",
+        "project-file"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:scripts/check-stale.ts:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "scripts/check-stale.ts",
+      "lineRange": [
+        22,
+        121
+      ],
+      "summary": "Function main in scripts/check-stale.ts, spanning lines 22-121.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:app/api/recommend-channel/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "app/api/recommend-channel/route.ts",
+      "lineRange": [
+        1,
+        290
+      ],
+      "summary": "Next.js API route for /api/recommend-channel; exports POST and delegates core work to library modules.",
+      "tags": [
+        "api-handler",
+        "exports",
+        "code"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:app/api/recommend-channel/route.ts:runChannelRec",
+      "type": "function",
+      "name": "runChannelRec",
+      "filePath": "app/api/recommend-channel/route.ts",
+      "lineRange": [
+        79,
+        210
+      ],
+      "summary": "Function runChannelRec in app/api/recommend-channel/route.ts, spanning lines 79-210.",
+      "tags": [
+        "function",
+        "internal",
+        "api-handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app/api/recommend-channel/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "app/api/recommend-channel/route.ts",
+      "lineRange": [
+        212,
+        279
+      ],
+      "summary": "POST request handler for /api/recommend-channel.",
+      "tags": [
+        "function",
+        "exported",
+        "api-handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app/api/recommend-channel/route.ts:clampInt",
+      "type": "function",
+      "name": "clampInt",
+      "filePath": "app/api/recommend-channel/route.ts",
+      "lineRange": [
+        281,
+        290
+      ],
+      "summary": "Function clampInt in app/api/recommend-channel/route.ts, spanning lines 281-290.",
+      "tags": [
+        "function",
+        "internal",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "endpoint:app/api/recommend-channel/route.ts:POST-/api/recommend-channel",
+      "type": "endpoint",
+      "name": "POST /api/recommend-channel",
+      "filePath": "app/api/recommend-channel/route.ts",
+      "summary": "POST HTTP endpoint implemented by app/api/recommend-channel/route.ts.",
+      "tags": [
+        "api-route",
+        "nextjs",
+        "http"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/api/search/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "app/api/search/route.ts",
+      "lineRange": [
+        1,
+        83
+      ],
+      "summary": "Next.js API route for /api/search; exports GET, POST and delegates core work to library modules.",
+      "tags": [
+        "api-handler",
+        "search",
+        "exports"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app/api/search/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "app/api/search/route.ts",
+      "lineRange": [
+        15,
+        32
+      ],
+      "summary": "GET request handler for /api/search.",
+      "tags": [
+        "function",
+        "exported",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/search/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "app/api/search/route.ts",
+      "lineRange": [
+        37,
+        83
+      ],
+      "summary": "POST request handler for /api/search.",
+      "tags": [
+        "function",
+        "exported",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "endpoint:app/api/search/route.ts:GET-/api/search",
+      "type": "endpoint",
+      "name": "GET /api/search",
+      "filePath": "app/api/search/route.ts",
+      "summary": "GET HTTP endpoint implemented by app/api/search/route.ts.",
+      "tags": [
+        "api-route",
+        "nextjs",
+        "http"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "endpoint:app/api/search/route.ts:POST-/api/search",
+      "type": "endpoint",
+      "name": "POST /api/search",
+      "filePath": "app/api/search/route.ts",
+      "summary": "POST HTTP endpoint implemented by app/api/search/route.ts.",
+      "tags": [
+        "api-route",
+        "nextjs",
+        "http"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/page.tsx",
+      "type": "file",
+      "name": "page.tsx",
+      "filePath": "app/page.tsx",
+      "lineRange": [
+        1,
+        1379
+      ],
+      "summary": "Main React client interface for browsing channels, ingesting content, triggering enrichment jobs, and searching indexed blocks.",
+      "tags": [
+        "component",
+        "exports",
+        "code"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:app/page.tsx:readFileAsDataUrl",
+      "type": "function",
+      "name": "readFileAsDataUrl",
+      "filePath": "app/page.tsx",
+      "lineRange": [
+        9,
+        21
+      ],
+      "summary": "Function readFileAsDataUrl in app/page.tsx, spanning lines 9-21.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/page.tsx:Page",
+      "type": "function",
+      "name": "Page",
+      "filePath": "app/page.tsx",
+      "lineRange": [
+        110,
+        1379
+      ],
+      "summary": "Function Page in app/page.tsx, spanning lines 110-1379.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:lib/query-image-limits.ts",
+      "type": "file",
+      "name": "query-image-limits.ts",
+      "filePath": "lib/query-image-limits.ts",
+      "lineRange": [
+        1,
+        14
+      ],
+      "summary": "Library module query-image-limits.ts providing QUERY_IMAGE_MAX_BYTES, QUERY_IMAGE_MAX_DATA_URL_CHARS for the application.",
+      "tags": [
+        "service",
+        "exports",
+        "code"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/search-core.ts",
+      "type": "file",
+      "name": "search-core.ts",
+      "filePath": "lib/search-core.ts",
+      "lineRange": [
+        1,
+        472
+      ],
+      "summary": "Core vector search pipeline: embeds text queries, queries sqlite-vec block and chunk indexes, applies channel filtering, and reranks with lexical boosts.",
+      "tags": [
+        "service",
+        "search",
+        "exports"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/search-core.ts:normalize",
+      "type": "function",
+      "name": "normalize",
+      "filePath": "lib/search-core.ts",
+      "lineRange": [
+        86,
+        95
+      ],
+      "summary": "Function normalize in lib/search-core.ts, spanning lines 86-95.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/search-core.ts:lexicalAdjustment",
+      "type": "function",
+      "name": "lexicalAdjustment",
+      "filePath": "lib/search-core.ts",
+      "lineRange": [
+        103,
+        126
+      ],
+      "summary": "Function lexicalAdjustment in lib/search-core.ts, spanning lines 103-126.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/search-core.ts:parseLimit",
+      "type": "function",
+      "name": "parseLimit",
+      "filePath": "lib/search-core.ts",
+      "lineRange": [
+        133,
+        135
+      ],
+      "summary": "Function parseLimit in lib/search-core.ts, spanning lines 133-135.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/search-core.ts:parseChannelFilter",
+      "type": "function",
+      "name": "parseChannelFilter",
+      "filePath": "lib/search-core.ts",
+      "lineRange": [
+        142,
+        154
+      ],
+      "summary": "Function parseChannelFilter in lib/search-core.ts, spanning lines 142-154.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/search-core.ts:runSearch",
+      "type": "function",
+      "name": "runSearch",
+      "filePath": "lib/search-core.ts",
+      "lineRange": [
+        169,
+        472
+      ],
+      "summary": "Function runSearch in lib/search-core.ts, spanning lines 169-472.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:lib/vision-query.ts",
+      "type": "file",
+      "name": "vision-query.ts",
+      "filePath": "lib/vision-query.ts",
+      "lineRange": [
+        1,
+        68
+      ],
+      "summary": "Library module vision-query.ts providing QUERY_IMAGE_MAX_BYTES, QUERY_IMAGE_MAX_DATA_URL_CHARS, ImageQueryError, captionImageForQuery for the application.",
+      "tags": [
+        "service",
+        "vision",
+        "exports"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/vision-query.ts:captionImageForQuery",
+      "type": "function",
+      "name": "captionImageForQuery",
+      "filePath": "lib/vision-query.ts",
+      "lineRange": [
+        38,
+        68
+      ],
+      "summary": "Function captionImageForQuery in lib/vision-query.ts, spanning lines 38-68.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/vision-query.ts:ImageQueryError",
+      "type": "class",
+      "name": "ImageQueryError",
+      "filePath": "lib/vision-query.ts",
+      "lineRange": [
+        27,
+        34
+      ],
+      "summary": "Class or type ImageQueryError defined in lib/vision-query.ts.",
+      "tags": [
+        "class",
+        "type-definition",
+        "typescript"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/vision.ts",
+      "type": "file",
+      "name": "vision.ts",
+      "filePath": "lib/vision.ts",
+      "lineRange": [
+        1,
+        101
+      ],
+      "summary": "Library module vision.ts providing VISION_MODEL, VISION_PROMPT, visionClient, visionCaption, parseVisionResponse for the application.",
+      "tags": [
+        "service",
+        "vision",
+        "exports"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/vision.ts:visionClient",
+      "type": "function",
+      "name": "visionClient",
+      "filePath": "lib/vision.ts",
+      "lineRange": [
+        30,
+        38
+      ],
+      "summary": "Function visionClient in lib/vision.ts, spanning lines 30-38.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/vision.ts:visionCaption",
+      "type": "function",
+      "name": "visionCaption",
+      "filePath": "lib/vision.ts",
+      "lineRange": [
+        43,
+        66
+      ],
+      "summary": "Function visionCaption in lib/vision.ts, spanning lines 43-66.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/vision.ts:parseVisionResponse",
+      "type": "function",
+      "name": "parseVisionResponse",
+      "filePath": "lib/vision.ts",
+      "lineRange": [
+        72,
+        90
+      ],
+      "summary": "Function parseVisionResponse in lib/vision.ts, spanning lines 72-90.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:scripts/eval-search.ts",
+      "type": "file",
+      "name": "eval-search.ts",
+      "filePath": "scripts/eval-search.ts",
+      "lineRange": [
+        1,
+        84
+      ],
+      "summary": "Local maintenance script for eval search workflows.",
+      "tags": [
+        "search",
+        "code",
+        "typescript"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:scripts/eval-search.ts:parseLines",
+      "type": "function",
+      "name": "parseLines",
+      "filePath": "scripts/eval-search.ts",
+      "lineRange": [
+        17,
+        29
+      ],
+      "summary": "Function parseLines in scripts/eval-search.ts, spanning lines 17-29.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scripts/eval-search.ts:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "scripts/eval-search.ts",
+      "lineRange": [
+        43,
+        82
+      ],
+      "summary": "Function main in scripts/eval-search.ts, spanning lines 43-82.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/api/external-content/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "app/api/external-content/route.ts",
+      "lineRange": [
+        1,
+        19
+      ],
+      "summary": "Next.js API route for /api/external-content; exports POST and delegates core work to library modules.",
+      "tags": [
+        "api-handler",
+        "exports",
+        "code"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/external-content/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "app/api/external-content/route.ts",
+      "lineRange": [
+        7,
+        19
+      ],
+      "summary": "POST request handler for /api/external-content.",
+      "tags": [
+        "function",
+        "exported",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "endpoint:app/api/external-content/route.ts:POST-/api/external-content",
+      "type": "endpoint",
+      "name": "POST /api/external-content",
+      "filePath": "app/api/external-content/route.ts",
+      "summary": "POST HTTP endpoint implemented by app/api/external-content/route.ts.",
+      "tags": [
+        "api-route",
+        "nextjs",
+        "http"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/api/ocr/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "app/api/ocr/route.ts",
+      "lineRange": [
+        1,
+        19
+      ],
+      "summary": "Next.js API route for /api/ocr; exports POST and delegates core work to library modules.",
+      "tags": [
+        "api-handler",
+        "vision",
+        "exports"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/ocr/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "app/api/ocr/route.ts",
+      "lineRange": [
+        7,
+        19
+      ],
+      "summary": "POST request handler for /api/ocr.",
+      "tags": [
+        "function",
+        "exported",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "endpoint:app/api/ocr/route.ts:POST-/api/ocr",
+      "type": "endpoint",
+      "name": "POST /api/ocr",
+      "filePath": "app/api/ocr/route.ts",
+      "summary": "POST HTTP endpoint implemented by app/api/ocr/route.ts.",
+      "tags": [
+        "api-route",
+        "nextjs",
+        "http"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/external-content.ts",
+      "type": "file",
+      "name": "external-content.ts",
+      "filePath": "lib/external-content.ts",
+      "lineRange": [
+        1,
+        506
+      ],
+      "summary": "Library module external-content.ts providing EXTERNAL_CONTENT_EMBED_SLICE_CHARS, extractPendingExternalContent for the application.",
+      "tags": [
+        "service",
+        "exports",
+        "code"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/external-content.ts:classifyUrl",
+      "type": "function",
+      "name": "classifyUrl",
+      "filePath": "lib/external-content.ts",
+      "lineRange": [
+        108,
+        129
+      ],
+      "summary": "Function classifyUrl in lib/external-content.ts, spanning lines 108-129.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/external-content.ts:fetchOne",
+      "type": "function",
+      "name": "fetchOne",
+      "filePath": "lib/external-content.ts",
+      "lineRange": [
+        157,
+        193
+      ],
+      "summary": "Function fetchOne in lib/external-content.ts, spanning lines 157-193.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/external-content.ts:fetchWithRetry",
+      "type": "function",
+      "name": "fetchWithRetry",
+      "filePath": "lib/external-content.ts",
+      "lineRange": [
+        195,
+        209
+      ],
+      "summary": "Function fetchWithRetry in lib/external-content.ts, spanning lines 195-209.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/external-content.ts:runPool",
+      "type": "function",
+      "name": "runPool",
+      "filePath": "lib/external-content.ts",
+      "lineRange": [
+        211,
+        227
+      ],
+      "summary": "Function runPool in lib/external-content.ts, spanning lines 211-227.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/external-content.ts:extractPendingExternalContent",
+      "type": "function",
+      "name": "extractPendingExternalContent",
+      "filePath": "lib/external-content.ts",
+      "lineRange": [
+        229,
+        506
+      ],
+      "summary": "Function extractPendingExternalContent in lib/external-content.ts, spanning lines 229-506.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:lib/link-clean.ts",
+      "type": "file",
+      "name": "link-clean.ts",
+      "filePath": "lib/link-clean.ts",
+      "lineRange": [
+        1,
+        145
+      ],
+      "summary": "Library module link-clean.ts providing cleanLinkMarkdown for the application.",
+      "tags": [
+        "service",
+        "exports",
+        "code"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/link-clean.ts:computeGithubDropRanges",
+      "type": "function",
+      "name": "computeGithubDropRanges",
+      "filePath": "lib/link-clean.ts",
+      "lineRange": [
+        74,
+        96
+      ],
+      "summary": "Function computeGithubDropRanges in lib/link-clean.ts, spanning lines 74-96.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/link-clean.ts:cleanLinkMarkdown",
+      "type": "function",
+      "name": "cleanLinkMarkdown",
+      "filePath": "lib/link-clean.ts",
+      "lineRange": [
+        98,
+        145
+      ],
+      "summary": "Function cleanLinkMarkdown in lib/link-clean.ts, spanning lines 98-145.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/ocr.ts",
+      "type": "file",
+      "name": "ocr.ts",
+      "filePath": "lib/ocr.ts",
+      "lineRange": [
+        1,
+        219
+      ],
+      "summary": "Library module ocr.ts providing ocrPendingImages for the application.",
+      "tags": [
+        "service",
+        "vision",
+        "exports"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/ocr.ts:runPool",
+      "type": "function",
+      "name": "runPool",
+      "filePath": "lib/ocr.ts",
+      "lineRange": [
+        42,
+        58
+      ],
+      "summary": "Function runPool in lib/ocr.ts, spanning lines 42-58.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/ocr.ts:ocrPendingImages",
+      "type": "function",
+      "name": "ocrPendingImages",
+      "filePath": "lib/ocr.ts",
+      "lineRange": [
+        69,
+        219
+      ],
+      "summary": "Function ocrPendingImages in lib/ocr.ts, spanning lines 69-219.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:lib/search-text.ts",
+      "type": "file",
+      "name": "search-text.ts",
+      "filePath": "lib/search-text.ts",
+      "lineRange": [
+        1,
+        113
+      ],
+      "summary": "Library module search-text.ts providing isFilenameLikeTitle, buildSearchText for the application.",
+      "tags": [
+        "service",
+        "search",
+        "exports"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/search-text.ts:isFilenameLikeTitle",
+      "type": "function",
+      "name": "isFilenameLikeTitle",
+      "filePath": "lib/search-text.ts",
+      "lineRange": [
+        30,
+        64
+      ],
+      "summary": "Function isFilenameLikeTitle in lib/search-text.ts, spanning lines 30-64.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/search-text.ts:buildSearchText",
+      "type": "function",
+      "name": "buildSearchText",
+      "filePath": "lib/search-text.ts",
+      "lineRange": [
+        82,
+        113
+      ],
+      "summary": "Function buildSearchText in lib/search-text.ts, spanning lines 82-113.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/api/arena/ingest/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "app/api/arena/ingest/route.ts",
+      "lineRange": [
+        1,
+        38
+      ],
+      "summary": "Next.js API route for /api/arena/ingest; exports POST and delegates core work to library modules.",
+      "tags": [
+        "api-handler",
+        "exports",
+        "code"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/arena/ingest/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "app/api/arena/ingest/route.ts",
+      "lineRange": [
+        7,
+        38
+      ],
+      "summary": "POST request handler for /api/arena/ingest.",
+      "tags": [
+        "function",
+        "exported",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "endpoint:app/api/arena/ingest/route.ts:POST-/api/arena/ingest",
+      "type": "endpoint",
+      "name": "POST /api/arena/ingest",
+      "filePath": "app/api/arena/ingest/route.ts",
+      "summary": "POST HTTP endpoint implemented by app/api/arena/ingest/route.ts.",
+      "tags": [
+        "api-route",
+        "nextjs",
+        "http"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/api/arena/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "app/api/arena/route.ts",
+      "lineRange": [
+        1,
+        151
+      ],
+      "summary": "Next.js API route for /api/arena; exports GET and delegates core work to library modules.",
+      "tags": [
+        "api-handler",
+        "exports",
+        "code"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app/api/arena/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "app/api/arena/route.ts",
+      "lineRange": [
+        50,
+        151
+      ],
+      "summary": "GET request handler for /api/arena.",
+      "tags": [
+        "function",
+        "exported",
+        "api-handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "endpoint:app/api/arena/route.ts:GET-/api/arena",
+      "type": "endpoint",
+      "name": "GET /api/arena",
+      "filePath": "app/api/arena/route.ts",
+      "summary": "GET HTTP endpoint implemented by app/api/arena/route.ts.",
+      "tags": [
+        "api-route",
+        "nextjs",
+        "http"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/arena.ts",
+      "type": "file",
+      "name": "arena.ts",
+      "filePath": "lib/arena.ts",
+      "lineRange": [
+        1,
+        242
+      ],
+      "summary": "Library module arena.ts providing ArenaError, parseUserSlug, getUser, getUserChannels, getAllUserChannels, getChannelContents, isArenaChannel, isArenaBlock for the application.",
+      "tags": [
+        "service",
+        "exports",
+        "code"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/arena.ts:parseUserSlug",
+      "type": "function",
+      "name": "parseUserSlug",
+      "filePath": "lib/arena.ts",
+      "lineRange": [
+        126,
+        154
+      ],
+      "summary": "Function parseUserSlug in lib/arena.ts, spanning lines 126-154.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/arena.ts:arenaFetch",
+      "type": "function",
+      "name": "arenaFetch",
+      "filePath": "lib/arena.ts",
+      "lineRange": [
+        156,
+        187
+      ],
+      "summary": "Function arenaFetch in lib/arena.ts, spanning lines 156-187.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/arena.ts:getUser",
+      "type": "function",
+      "name": "getUser",
+      "filePath": "lib/arena.ts",
+      "lineRange": [
+        189,
+        191
+      ],
+      "summary": "Function getUser in lib/arena.ts, spanning lines 189-191.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/arena.ts:getUserChannels",
+      "type": "function",
+      "name": "getUserChannels",
+      "filePath": "lib/arena.ts",
+      "lineRange": [
+        193,
+        203
+      ],
+      "summary": "Function getUserChannels in lib/arena.ts, spanning lines 193-203.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/arena.ts:getAllUserChannels",
+      "type": "function",
+      "name": "getAllUserChannels",
+      "filePath": "lib/arena.ts",
+      "lineRange": [
+        205,
+        221
+      ],
+      "summary": "Function getAllUserChannels in lib/arena.ts, spanning lines 205-221.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/arena.ts:getChannelContents",
+      "type": "function",
+      "name": "getChannelContents",
+      "filePath": "lib/arena.ts",
+      "lineRange": [
+        223,
+        234
+      ],
+      "summary": "Function getChannelContents in lib/arena.ts, spanning lines 223-234.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/arena.ts:isArenaChannel",
+      "type": "function",
+      "name": "isArenaChannel",
+      "filePath": "lib/arena.ts",
+      "lineRange": [
+        236,
+        238
+      ],
+      "summary": "Function isArenaChannel in lib/arena.ts, spanning lines 236-238.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/arena.ts:isArenaBlock",
+      "type": "function",
+      "name": "isArenaBlock",
+      "filePath": "lib/arena.ts",
+      "lineRange": [
+        240,
+        242
+      ],
+      "summary": "Function isArenaBlock in lib/arena.ts, spanning lines 240-242.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/arena.ts:ArenaError",
+      "type": "class",
+      "name": "ArenaError",
+      "filePath": "lib/arena.ts",
+      "lineRange": [
+        102,
+        111
+      ],
+      "summary": "Class or type ArenaError defined in lib/arena.ts.",
+      "tags": [
+        "class",
+        "type-definition",
+        "typescript"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/ingest.ts",
+      "type": "file",
+      "name": "ingest.ts",
+      "filePath": "lib/ingest.ts",
+      "lineRange": [
+        1,
+        398
+      ],
+      "summary": "Library module ingest.ts providing ingestUser, logIngestError for the application.",
+      "tags": [
+        "service",
+        "exports",
+        "code"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/ingest.ts:runPool",
+      "type": "function",
+      "name": "runPool",
+      "filePath": "lib/ingest.ts",
+      "lineRange": [
+        47,
+        65
+      ],
+      "summary": "Function runPool in lib/ingest.ts, spanning lines 47-65.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/ingest.ts:ingestUser",
+      "type": "function",
+      "name": "ingestUser",
+      "filePath": "lib/ingest.ts",
+      "lineRange": [
+        67,
+        375
+      ],
+      "summary": "Function ingestUser in lib/ingest.ts, spanning lines 67-375.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/ingest.ts:logIngestError",
+      "type": "function",
+      "name": "logIngestError",
+      "filePath": "lib/ingest.ts",
+      "lineRange": [
+        379,
+        398
+      ],
+      "summary": "Function logIngestError in lib/ingest.ts, spanning lines 379-398.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/api/transcripts/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "app/api/transcripts/route.ts",
+      "lineRange": [
+        1,
+        21
+      ],
+      "summary": "Next.js API route for /api/transcripts; exports POST and delegates core work to library modules.",
+      "tags": [
+        "api-handler",
+        "exports",
+        "code"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/transcripts/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "app/api/transcripts/route.ts",
+      "lineRange": [
+        7,
+        21
+      ],
+      "summary": "POST request handler for /api/transcripts.",
+      "tags": [
+        "function",
+        "exported",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "endpoint:app/api/transcripts/route.ts:POST-/api/transcripts",
+      "type": "endpoint",
+      "name": "POST /api/transcripts",
+      "filePath": "app/api/transcripts/route.ts",
+      "summary": "POST HTTP endpoint implemented by app/api/transcripts/route.ts.",
+      "tags": [
+        "api-route",
+        "nextjs",
+        "http"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/transcripts.test.ts",
+      "type": "file",
+      "name": "transcripts.test.ts",
+      "filePath": "lib/transcripts.test.ts",
+      "lineRange": [
+        1,
+        103
+      ],
+      "summary": "Library module transcripts.test.ts providing supporting functionality for the application.",
+      "tags": [
+        "test",
+        "service",
+        "code"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:lib/transcripts.ts",
+      "type": "file",
+      "name": "transcripts.ts",
+      "filePath": "lib/transcripts.ts",
+      "lineRange": [
+        1,
+        510
+      ],
+      "summary": "Library module transcripts.ts providing TRANSCRIPT_EMBED_SLICE_CHARS, isYouTubeUrl, extractPendingTranscripts for the application.",
+      "tags": [
+        "service",
+        "exports",
+        "code",
+        "tested"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/transcripts.ts:isYouTubeUrl",
+      "type": "function",
+      "name": "isYouTubeUrl",
+      "filePath": "lib/transcripts.ts",
+      "lineRange": [
+        80,
+        88
+      ],
+      "summary": "Function isYouTubeUrl in lib/transcripts.ts, spanning lines 80-88.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/transcripts.ts:spawnYtDlp",
+      "type": "function",
+      "name": "spawnYtDlp",
+      "filePath": "lib/transcripts.ts",
+      "lineRange": [
+        100,
+        170
+      ],
+      "summary": "Function spawnYtDlp in lib/transcripts.ts, spanning lines 100-170.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/transcripts.ts:pickVttFile",
+      "type": "function",
+      "name": "pickVttFile",
+      "filePath": "lib/transcripts.ts",
+      "lineRange": [
+        179,
+        208
+      ],
+      "summary": "Function pickVttFile in lib/transcripts.ts, spanning lines 179-208.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/transcripts.ts:fetchOne",
+      "type": "function",
+      "name": "fetchOne",
+      "filePath": "lib/transcripts.ts",
+      "lineRange": [
+        210,
+        240
+      ],
+      "summary": "Function fetchOne in lib/transcripts.ts, spanning lines 210-240.",
+      "tags": [
+        "function",
+        "internal",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/transcripts.ts:extractPendingTranscripts",
+      "type": "function",
+      "name": "extractPendingTranscripts",
+      "filePath": "lib/transcripts.ts",
+      "lineRange": [
+        244,
+        510
+      ],
+      "summary": "Function extractPendingTranscripts in lib/transcripts.ts, spanning lines 244-510.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:lib/transcripts.ts:YtDlpMissingError",
+      "type": "class",
+      "name": "YtDlpMissingError",
+      "filePath": "lib/transcripts.ts",
+      "lineRange": [
+        98,
+        98
+      ],
+      "summary": "Class or type YtDlpMissingError defined in lib/transcripts.ts.",
+      "tags": [
+        "class",
+        "type-definition",
+        "typescript"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/vtt.ts",
+      "type": "file",
+      "name": "vtt.ts",
+      "filePath": "lib/vtt.ts",
+      "lineRange": [
+        1,
+        103
+      ],
+      "summary": "Library module vtt.ts providing parseVtt for the application.",
+      "tags": [
+        "service",
+        "exports",
+        "code"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/vtt.ts:parseVtt",
+      "type": "function",
+      "name": "parseVtt",
+      "filePath": "lib/vtt.ts",
+      "lineRange": [
+        30,
+        103
+      ],
+      "summary": "Function parseVtt in lib/vtt.ts, spanning lines 30-103.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "pipeline:.github/workflows/ci.yml",
+      "type": "pipeline",
+      "name": "ci.yml",
+      "filePath": ".github/workflows/ci.yml",
+      "lineRange": [
+        1,
+        21
+      ],
+      "summary": "GitHub Actions CI workflow that installs dependencies and runs type checking, unit tests, and production build on main pushes and pull requests.",
+      "tags": [
+        "ci-cd",
+        "code",
+        "typescript"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:.env.example",
+      "type": "config",
+      "name": ".env.example",
+      "filePath": ".env.example",
+      "lineRange": [
+        1,
+        5
+      ],
+      "summary": "Configuration file for .env.example used by the application/tooling.",
+      "tags": [
+        "configuration",
+        "code",
+        "typescript"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "README.md",
+      "lineRange": [
+        1,
+        37
+      ],
+      "summary": "Project README documenting setup, indexing, search usage, and the main Next.js/OpenAI/sqlite-vec stack.",
+      "tags": [
+        "documentation",
+        "code",
+        "typescript"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:package.json",
+      "type": "config",
+      "name": "package.json",
+      "filePath": "package.json",
+      "lineRange": [
+        1,
+        33
+      ],
+      "summary": "Configuration file for package.json used by the application/tooling.",
+      "tags": [
+        "configuration",
+        "code",
+        "typescript"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:tsconfig.json",
+      "type": "config",
+      "name": "tsconfig.json",
+      "filePath": "tsconfig.json",
+      "lineRange": [
+        1,
+        22
+      ],
+      "summary": "Configuration file for tsconfig.json used by the application/tooling.",
+      "tags": [
+        "configuration",
+        "code",
+        "typescript"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/globals.css",
+      "type": "file",
+      "name": "globals.css",
+      "filePath": "app/globals.css",
+      "lineRange": [
+        1,
+        1
+      ],
+      "summary": "css project file app/globals.css.",
+      "tags": [
+        "css",
+        "code",
+        "typescript"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/layout.tsx",
+      "type": "file",
+      "name": "layout.tsx",
+      "filePath": "app/layout.tsx",
+      "lineRange": [
+        1,
+        17
+      ],
+      "summary": "typescript project file app/layout.tsx.",
+      "tags": [
+        "exports",
+        "code",
+        "typescript"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/layout.tsx:RootLayout",
+      "type": "function",
+      "name": "RootLayout",
+      "filePath": "app/layout.tsx",
+      "lineRange": [
+        9,
+        17
+      ],
+      "summary": "Function RootLayout in app/layout.tsx, spanning lines 9-17.",
+      "tags": [
+        "function",
+        "exported",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "schema:data/schema.sql",
+      "type": "schema",
+      "name": "schema.sql",
+      "filePath": "data/schema.sql",
+      "lineRange": [
+        1,
+        127
+      ],
+      "summary": "Canonical SQLite schema defining Arena users, channels, blocks, enrichment tables, chunk tables, and sqlite-vec virtual tables.",
+      "tags": [
+        "database",
+        "schema-definition",
+        "code"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "table:data/schema.sql:users",
+      "type": "table",
+      "name": "users",
+      "filePath": "data/schema.sql",
+      "summary": "SQLite table or sqlite-vec virtual table users defined by the canonical schema.",
+      "tags": [
+        "database",
+        "schema",
+        "sqlite"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:data/schema.sql:channels",
+      "type": "table",
+      "name": "channels",
+      "filePath": "data/schema.sql",
+      "summary": "SQLite table or sqlite-vec virtual table channels defined by the canonical schema.",
+      "tags": [
+        "database",
+        "schema",
+        "sqlite"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:data/schema.sql:blocks",
+      "type": "table",
+      "name": "blocks",
+      "filePath": "data/schema.sql",
+      "summary": "SQLite table or sqlite-vec virtual table blocks defined by the canonical schema.",
+      "tags": [
+        "database",
+        "schema",
+        "sqlite"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:data/schema.sql:block_channels",
+      "type": "table",
+      "name": "block_channels",
+      "filePath": "data/schema.sql",
+      "summary": "SQLite table or sqlite-vec virtual table block_channels defined by the canonical schema.",
+      "tags": [
+        "database",
+        "schema",
+        "sqlite"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:data/schema.sql:vec_blocks",
+      "type": "table",
+      "name": "vec_blocks",
+      "filePath": "data/schema.sql",
+      "summary": "SQLite table or sqlite-vec virtual table vec_blocks defined by the canonical schema.",
+      "tags": [
+        "database",
+        "schema",
+        "sqlite"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:data/schema.sql:sync_logs",
+      "type": "table",
+      "name": "sync_logs",
+      "filePath": "data/schema.sql",
+      "summary": "SQLite table or sqlite-vec virtual table sync_logs defined by the canonical schema.",
+      "tags": [
+        "database",
+        "schema",
+        "sqlite"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:data/schema.sql:block_ocr",
+      "type": "table",
+      "name": "block_ocr",
+      "filePath": "data/schema.sql",
+      "summary": "SQLite table or sqlite-vec virtual table block_ocr defined by the canonical schema.",
+      "tags": [
+        "database",
+        "schema",
+        "sqlite"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:data/schema.sql:block_link_content",
+      "type": "table",
+      "name": "block_link_content",
+      "filePath": "data/schema.sql",
+      "summary": "SQLite table or sqlite-vec virtual table block_link_content defined by the canonical schema.",
+      "tags": [
+        "database",
+        "schema",
+        "sqlite"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:data/schema.sql:block_transcripts",
+      "type": "table",
+      "name": "block_transcripts",
+      "filePath": "data/schema.sql",
+      "summary": "SQLite table or sqlite-vec virtual table block_transcripts defined by the canonical schema.",
+      "tags": [
+        "database",
+        "schema",
+        "sqlite"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:data/schema.sql:block_chunks",
+      "type": "table",
+      "name": "block_chunks",
+      "filePath": "data/schema.sql",
+      "summary": "SQLite table or sqlite-vec virtual table block_chunks defined by the canonical schema.",
+      "tags": [
+        "database",
+        "schema",
+        "sqlite"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:data/schema.sql:vec_block_chunks",
+      "type": "table",
+      "name": "vec_block_chunks",
+      "filePath": "data/schema.sql",
+      "summary": "SQLite table or sqlite-vec virtual table vec_block_chunks defined by the canonical schema.",
+      "tags": [
+        "database",
+        "schema",
+        "sqlite"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:evals/queries.jsonl",
+      "type": "file",
+      "name": "queries.jsonl",
+      "filePath": "evals/queries.jsonl",
+      "lineRange": [
+        1,
+        15
+      ],
+      "summary": "jsonl project file evals/queries.jsonl.",
+      "tags": [
+        "jsonl",
+        "code",
+        "typescript"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:next-env.d.ts",
+      "type": "file",
+      "name": "next-env.d.ts",
+      "filePath": "next-env.d.ts",
+      "lineRange": [
+        1,
+        6
+      ],
+      "summary": "typescript project file next-env.d.ts.",
+      "tags": [
+        "typescript",
+        "code",
+        "project-file"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:next.config.ts",
+      "type": "file",
+      "name": "next.config.ts",
+      "filePath": "next.config.ts",
+      "lineRange": [
+        1,
+        7
+      ],
+      "summary": "typescript project file next.config.ts.",
+      "tags": [
+        "typescript",
+        "code",
+        "project-file"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:postcss.config.mjs",
+      "type": "file",
+      "name": "postcss.config.mjs",
+      "filePath": "postcss.config.mjs",
+      "lineRange": [
+        1,
+        7
+      ],
+      "summary": "javascript project file postcss.config.mjs.",
+      "tags": [
+        "javascript",
+        "code",
+        "typescript"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:app/api/channels/route.ts",
+      "target": "function:app/api/channels/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "route.ts contains GET"
+    },
+    {
+      "source": "file:app/api/channels/route.ts",
+      "target": "function:app/api/channels/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "route.ts exports GET"
+    },
+    {
+      "source": "file:app/api/channels/route.ts",
+      "target": "endpoint:app/api/channels/route.ts:GET-/api/channels",
+      "type": "routes",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "app/api/channels/route.ts implements GET /api/channels"
+    },
+    {
+      "source": "file:app/api/chunks/route.ts",
+      "target": "function:app/api/chunks/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "route.ts contains POST"
+    },
+    {
+      "source": "file:app/api/chunks/route.ts",
+      "target": "function:app/api/chunks/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "route.ts exports POST"
+    },
+    {
+      "source": "file:app/api/chunks/route.ts",
+      "target": "endpoint:app/api/chunks/route.ts:POST-/api/chunks",
+      "type": "routes",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "app/api/chunks/route.ts implements POST /api/chunks"
+    },
+    {
+      "source": "file:app/api/embed/route.ts",
+      "target": "function:app/api/embed/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "route.ts contains POST"
+    },
+    {
+      "source": "file:app/api/embed/route.ts",
+      "target": "function:app/api/embed/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "route.ts exports POST"
+    },
+    {
+      "source": "file:app/api/embed/route.ts",
+      "target": "endpoint:app/api/embed/route.ts:POST-/api/embed",
+      "type": "routes",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "app/api/embed/route.ts implements POST /api/embed"
+    },
+    {
+      "source": "file:lib/chunks.ts",
+      "target": "function:lib/chunks.ts:findChunkEnd",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "chunks.ts contains findChunkEnd"
+    },
+    {
+      "source": "file:lib/chunks.ts",
+      "target": "function:lib/chunks.ts:chunkText",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "chunks.ts contains chunkText"
+    },
+    {
+      "source": "file:lib/chunks.ts",
+      "target": "function:lib/chunks.ts:chunkText",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "chunks.ts exports chunkText"
+    },
+    {
+      "source": "file:lib/chunks.ts",
+      "target": "function:lib/chunks.ts:deleteChunkVectorsForBlock",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "chunks.ts contains deleteChunkVectorsForBlock"
+    },
+    {
+      "source": "file:lib/chunks.ts",
+      "target": "function:lib/chunks.ts:clearChunksForBlock",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "chunks.ts contains clearChunksForBlock"
+    },
+    {
+      "source": "file:lib/chunks.ts",
+      "target": "function:lib/chunks.ts:clearChunksForBlock",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "chunks.ts exports clearChunksForBlock"
+    },
+    {
+      "source": "file:lib/chunks.ts",
+      "target": "function:lib/chunks.ts:rebuildChunksForBlock",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "chunks.ts contains rebuildChunksForBlock"
+    },
+    {
+      "source": "file:lib/chunks.ts",
+      "target": "function:lib/chunks.ts:rebuildChunksForBlock",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "chunks.ts exports rebuildChunksForBlock"
+    },
+    {
+      "source": "file:lib/chunks.ts",
+      "target": "function:lib/chunks.ts:rebuildMissingLinkChunks",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "chunks.ts contains rebuildMissingLinkChunks"
+    },
+    {
+      "source": "file:lib/chunks.ts",
+      "target": "function:lib/chunks.ts:rebuildAllLinkChunks",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "chunks.ts contains rebuildAllLinkChunks"
+    },
+    {
+      "source": "file:lib/chunks.ts",
+      "target": "function:lib/chunks.ts:rebuildMissingTranscriptChunks",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "chunks.ts contains rebuildMissingTranscriptChunks"
+    },
+    {
+      "source": "file:lib/chunks.ts",
+      "target": "function:lib/chunks.ts:rebuildAllTranscriptChunks",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "chunks.ts contains rebuildAllTranscriptChunks"
+    },
+    {
+      "source": "file:lib/chunks.ts",
+      "target": "function:lib/chunks.ts:embedPendingChunks",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "chunks.ts contains embedPendingChunks"
+    },
+    {
+      "source": "file:lib/chunks.ts",
+      "target": "function:lib/chunks.ts:processChunks",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "chunks.ts contains processChunks"
+    },
+    {
+      "source": "file:lib/chunks.ts",
+      "target": "function:lib/chunks.ts:processChunks",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "chunks.ts exports processChunks"
+    },
+    {
+      "source": "file:lib/db.ts",
+      "target": "function:lib/db.ts:getDb",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "db.ts contains getDb"
+    },
+    {
+      "source": "file:lib/db.ts",
+      "target": "function:lib/db.ts:getDb",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "db.ts exports getDb"
+    },
+    {
+      "source": "file:lib/embed-blocks.ts",
+      "target": "function:lib/embed-blocks.ts:embedPendingBlocks",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "embed-blocks.ts contains embedPendingBlocks"
+    },
+    {
+      "source": "file:lib/embed-blocks.ts",
+      "target": "function:lib/embed-blocks.ts:embedPendingBlocks",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "embed-blocks.ts exports embedPendingBlocks"
+    },
+    {
+      "source": "file:lib/embeddings.ts",
+      "target": "function:lib/embeddings.ts:embed",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "embeddings.ts contains embed"
+    },
+    {
+      "source": "file:lib/embeddings.ts",
+      "target": "function:lib/embeddings.ts:embed",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "embeddings.ts exports embed"
+    },
+    {
+      "source": "file:lib/embeddings.ts",
+      "target": "function:lib/embeddings.ts:embedMany",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "embeddings.ts contains embedMany"
+    },
+    {
+      "source": "file:lib/embeddings.ts",
+      "target": "function:lib/embeddings.ts:embedMany",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "embeddings.ts exports embedMany"
+    },
+    {
+      "source": "file:scripts/check-stale.ts",
+      "target": "function:scripts/check-stale.ts:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "check-stale.ts contains main"
+    },
+    {
+      "source": "file:app/api/channels/route.ts",
+      "target": "file:lib/db.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "app/api/channels/route.ts imports lib/db.ts"
+    },
+    {
+      "source": "file:app/api/chunks/route.ts",
+      "target": "file:lib/chunks.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "app/api/chunks/route.ts imports lib/chunks.ts"
+    },
+    {
+      "source": "file:app/api/embed/route.ts",
+      "target": "file:lib/embed-blocks.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "app/api/embed/route.ts imports lib/embed-blocks.ts"
+    },
+    {
+      "source": "file:lib/chunks.ts",
+      "target": "file:lib/db.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/chunks.ts imports lib/db.ts"
+    },
+    {
+      "source": "file:lib/chunks.ts",
+      "target": "file:lib/embeddings.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/chunks.ts imports lib/embeddings.ts"
+    },
+    {
+      "source": "file:lib/embed-blocks.ts",
+      "target": "file:lib/db.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/embed-blocks.ts imports lib/db.ts"
+    },
+    {
+      "source": "file:lib/embed-blocks.ts",
+      "target": "file:lib/embeddings.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/embed-blocks.ts imports lib/embeddings.ts"
+    },
+    {
+      "source": "file:scripts/check-stale.ts",
+      "target": "file:lib/db.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "scripts/check-stale.ts imports lib/db.ts"
+    },
+    {
+      "source": "file:scripts/check-stale.ts",
+      "target": "file:lib/embeddings.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "scripts/check-stale.ts imports lib/embeddings.ts"
+    },
+    {
+      "source": "file:app/api/recommend-channel/route.ts",
+      "target": "function:app/api/recommend-channel/route.ts:runChannelRec",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "route.ts contains runChannelRec"
+    },
+    {
+      "source": "file:app/api/recommend-channel/route.ts",
+      "target": "function:app/api/recommend-channel/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "route.ts contains POST"
+    },
+    {
+      "source": "file:app/api/recommend-channel/route.ts",
+      "target": "function:app/api/recommend-channel/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "route.ts exports POST"
+    },
+    {
+      "source": "file:app/api/recommend-channel/route.ts",
+      "target": "function:app/api/recommend-channel/route.ts:clampInt",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "route.ts contains clampInt"
+    },
+    {
+      "source": "file:app/api/recommend-channel/route.ts",
+      "target": "endpoint:app/api/recommend-channel/route.ts:POST-/api/recommend-channel",
+      "type": "routes",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "app/api/recommend-channel/route.ts implements POST /api/recommend-channel"
+    },
+    {
+      "source": "file:app/api/search/route.ts",
+      "target": "function:app/api/search/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "route.ts contains GET"
+    },
+    {
+      "source": "file:app/api/search/route.ts",
+      "target": "function:app/api/search/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "route.ts exports GET"
+    },
+    {
+      "source": "file:app/api/search/route.ts",
+      "target": "function:app/api/search/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "route.ts contains POST"
+    },
+    {
+      "source": "file:app/api/search/route.ts",
+      "target": "function:app/api/search/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "route.ts exports POST"
+    },
+    {
+      "source": "file:app/api/search/route.ts",
+      "target": "endpoint:app/api/search/route.ts:GET-/api/search",
+      "type": "routes",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "app/api/search/route.ts implements GET /api/search"
+    },
+    {
+      "source": "file:app/api/search/route.ts",
+      "target": "endpoint:app/api/search/route.ts:POST-/api/search",
+      "type": "routes",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "app/api/search/route.ts implements POST /api/search"
+    },
+    {
+      "source": "file:app/page.tsx",
+      "target": "function:app/page.tsx:readFileAsDataUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "page.tsx contains readFileAsDataUrl"
+    },
+    {
+      "source": "file:app/page.tsx",
+      "target": "function:app/page.tsx:Page",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "page.tsx contains Page"
+    },
+    {
+      "source": "file:app/page.tsx",
+      "target": "function:app/page.tsx:Page",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "page.tsx exports Page"
+    },
+    {
+      "source": "file:lib/search-core.ts",
+      "target": "function:lib/search-core.ts:normalize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "search-core.ts contains normalize"
+    },
+    {
+      "source": "file:lib/search-core.ts",
+      "target": "function:lib/search-core.ts:lexicalAdjustment",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "search-core.ts contains lexicalAdjustment"
+    },
+    {
+      "source": "file:lib/search-core.ts",
+      "target": "function:lib/search-core.ts:parseLimit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "search-core.ts contains parseLimit"
+    },
+    {
+      "source": "file:lib/search-core.ts",
+      "target": "function:lib/search-core.ts:parseLimit",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "search-core.ts exports parseLimit"
+    },
+    {
+      "source": "file:lib/search-core.ts",
+      "target": "function:lib/search-core.ts:parseChannelFilter",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "search-core.ts contains parseChannelFilter"
+    },
+    {
+      "source": "file:lib/search-core.ts",
+      "target": "function:lib/search-core.ts:parseChannelFilter",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "search-core.ts exports parseChannelFilter"
+    },
+    {
+      "source": "file:lib/search-core.ts",
+      "target": "function:lib/search-core.ts:runSearch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "search-core.ts contains runSearch"
+    },
+    {
+      "source": "file:lib/search-core.ts",
+      "target": "function:lib/search-core.ts:runSearch",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "search-core.ts exports runSearch"
+    },
+    {
+      "source": "file:lib/vision-query.ts",
+      "target": "function:lib/vision-query.ts:captionImageForQuery",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "vision-query.ts contains captionImageForQuery"
+    },
+    {
+      "source": "file:lib/vision-query.ts",
+      "target": "function:lib/vision-query.ts:captionImageForQuery",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "vision-query.ts exports captionImageForQuery"
+    },
+    {
+      "source": "file:lib/vision-query.ts",
+      "target": "class:lib/vision-query.ts:ImageQueryError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "vision-query.ts contains ImageQueryError"
+    },
+    {
+      "source": "file:lib/vision-query.ts",
+      "target": "class:lib/vision-query.ts:ImageQueryError",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:lib/vision.ts",
+      "target": "function:lib/vision.ts:visionClient",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "vision.ts contains visionClient"
+    },
+    {
+      "source": "file:lib/vision.ts",
+      "target": "function:lib/vision.ts:visionClient",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "vision.ts exports visionClient"
+    },
+    {
+      "source": "file:lib/vision.ts",
+      "target": "function:lib/vision.ts:visionCaption",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "vision.ts contains visionCaption"
+    },
+    {
+      "source": "file:lib/vision.ts",
+      "target": "function:lib/vision.ts:visionCaption",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "vision.ts exports visionCaption"
+    },
+    {
+      "source": "file:lib/vision.ts",
+      "target": "function:lib/vision.ts:parseVisionResponse",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "vision.ts contains parseVisionResponse"
+    },
+    {
+      "source": "file:lib/vision.ts",
+      "target": "function:lib/vision.ts:parseVisionResponse",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "vision.ts exports parseVisionResponse"
+    },
+    {
+      "source": "file:scripts/eval-search.ts",
+      "target": "function:scripts/eval-search.ts:parseLines",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "eval-search.ts contains parseLines"
+    },
+    {
+      "source": "file:scripts/eval-search.ts",
+      "target": "function:scripts/eval-search.ts:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "eval-search.ts contains main"
+    },
+    {
+      "source": "file:app/api/recommend-channel/route.ts",
+      "target": "file:lib/db.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "app/api/recommend-channel/route.ts imports lib/db.ts"
+    },
+    {
+      "source": "file:app/api/recommend-channel/route.ts",
+      "target": "file:lib/embeddings.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "app/api/recommend-channel/route.ts imports lib/embeddings.ts"
+    },
+    {
+      "source": "file:app/api/recommend-channel/route.ts",
+      "target": "file:lib/vision-query.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "app/api/recommend-channel/route.ts imports lib/vision-query.ts"
+    },
+    {
+      "source": "file:app/api/search/route.ts",
+      "target": "file:lib/search-core.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "app/api/search/route.ts imports lib/search-core.ts"
+    },
+    {
+      "source": "file:app/api/search/route.ts",
+      "target": "file:lib/vision-query.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "app/api/search/route.ts imports lib/vision-query.ts"
+    },
+    {
+      "source": "file:app/page.tsx",
+      "target": "file:lib/query-image-limits.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "app/page.tsx imports lib/query-image-limits.ts"
+    },
+    {
+      "source": "file:lib/search-core.ts",
+      "target": "file:lib/db.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/search-core.ts imports lib/db.ts"
+    },
+    {
+      "source": "file:lib/search-core.ts",
+      "target": "file:lib/embeddings.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/search-core.ts imports lib/embeddings.ts"
+    },
+    {
+      "source": "file:lib/vision-query.ts",
+      "target": "file:lib/query-image-limits.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/vision-query.ts imports lib/query-image-limits.ts"
+    },
+    {
+      "source": "file:lib/vision-query.ts",
+      "target": "file:lib/vision.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/vision-query.ts imports lib/vision.ts"
+    },
+    {
+      "source": "file:scripts/eval-search.ts",
+      "target": "file:lib/search-core.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "scripts/eval-search.ts imports lib/search-core.ts"
+    },
+    {
+      "source": "file:app/api/external-content/route.ts",
+      "target": "function:app/api/external-content/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "route.ts contains POST"
+    },
+    {
+      "source": "file:app/api/external-content/route.ts",
+      "target": "function:app/api/external-content/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "route.ts exports POST"
+    },
+    {
+      "source": "file:app/api/external-content/route.ts",
+      "target": "endpoint:app/api/external-content/route.ts:POST-/api/external-content",
+      "type": "routes",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "app/api/external-content/route.ts implements POST /api/external-content"
+    },
+    {
+      "source": "file:app/api/ocr/route.ts",
+      "target": "function:app/api/ocr/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "route.ts contains POST"
+    },
+    {
+      "source": "file:app/api/ocr/route.ts",
+      "target": "function:app/api/ocr/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "route.ts exports POST"
+    },
+    {
+      "source": "file:app/api/ocr/route.ts",
+      "target": "endpoint:app/api/ocr/route.ts:POST-/api/ocr",
+      "type": "routes",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "app/api/ocr/route.ts implements POST /api/ocr"
+    },
+    {
+      "source": "file:lib/external-content.ts",
+      "target": "function:lib/external-content.ts:classifyUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "external-content.ts contains classifyUrl"
+    },
+    {
+      "source": "file:lib/external-content.ts",
+      "target": "function:lib/external-content.ts:fetchOne",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "external-content.ts contains fetchOne"
+    },
+    {
+      "source": "file:lib/external-content.ts",
+      "target": "function:lib/external-content.ts:fetchWithRetry",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "external-content.ts contains fetchWithRetry"
+    },
+    {
+      "source": "file:lib/external-content.ts",
+      "target": "function:lib/external-content.ts:runPool",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "external-content.ts contains runPool"
+    },
+    {
+      "source": "file:lib/external-content.ts",
+      "target": "function:lib/external-content.ts:extractPendingExternalContent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "external-content.ts contains extractPendingExternalContent"
+    },
+    {
+      "source": "file:lib/external-content.ts",
+      "target": "function:lib/external-content.ts:extractPendingExternalContent",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "external-content.ts exports extractPendingExternalContent"
+    },
+    {
+      "source": "file:lib/link-clean.ts",
+      "target": "function:lib/link-clean.ts:computeGithubDropRanges",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "link-clean.ts contains computeGithubDropRanges"
+    },
+    {
+      "source": "file:lib/link-clean.ts",
+      "target": "function:lib/link-clean.ts:cleanLinkMarkdown",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "link-clean.ts contains cleanLinkMarkdown"
+    },
+    {
+      "source": "file:lib/link-clean.ts",
+      "target": "function:lib/link-clean.ts:cleanLinkMarkdown",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "link-clean.ts exports cleanLinkMarkdown"
+    },
+    {
+      "source": "file:lib/ocr.ts",
+      "target": "function:lib/ocr.ts:runPool",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "ocr.ts contains runPool"
+    },
+    {
+      "source": "file:lib/ocr.ts",
+      "target": "function:lib/ocr.ts:ocrPendingImages",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "ocr.ts contains ocrPendingImages"
+    },
+    {
+      "source": "file:lib/ocr.ts",
+      "target": "function:lib/ocr.ts:ocrPendingImages",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "ocr.ts exports ocrPendingImages"
+    },
+    {
+      "source": "file:lib/search-text.ts",
+      "target": "function:lib/search-text.ts:isFilenameLikeTitle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "search-text.ts contains isFilenameLikeTitle"
+    },
+    {
+      "source": "file:lib/search-text.ts",
+      "target": "function:lib/search-text.ts:isFilenameLikeTitle",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "search-text.ts exports isFilenameLikeTitle"
+    },
+    {
+      "source": "file:lib/search-text.ts",
+      "target": "function:lib/search-text.ts:buildSearchText",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "search-text.ts contains buildSearchText"
+    },
+    {
+      "source": "file:lib/search-text.ts",
+      "target": "function:lib/search-text.ts:buildSearchText",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "search-text.ts exports buildSearchText"
+    },
+    {
+      "source": "file:app/api/external-content/route.ts",
+      "target": "file:lib/external-content.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "app/api/external-content/route.ts imports lib/external-content.ts"
+    },
+    {
+      "source": "file:app/api/ocr/route.ts",
+      "target": "file:lib/ocr.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "app/api/ocr/route.ts imports lib/ocr.ts"
+    },
+    {
+      "source": "file:lib/external-content.ts",
+      "target": "file:lib/chunks.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/external-content.ts imports lib/chunks.ts"
+    },
+    {
+      "source": "file:lib/external-content.ts",
+      "target": "file:lib/db.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/external-content.ts imports lib/db.ts"
+    },
+    {
+      "source": "file:lib/external-content.ts",
+      "target": "file:lib/link-clean.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/external-content.ts imports lib/link-clean.ts"
+    },
+    {
+      "source": "file:lib/external-content.ts",
+      "target": "file:lib/search-text.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/external-content.ts imports lib/search-text.ts"
+    },
+    {
+      "source": "file:lib/ocr.ts",
+      "target": "file:lib/db.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/ocr.ts imports lib/db.ts"
+    },
+    {
+      "source": "file:lib/ocr.ts",
+      "target": "file:lib/search-text.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/ocr.ts imports lib/search-text.ts"
+    },
+    {
+      "source": "file:lib/ocr.ts",
+      "target": "file:lib/vision.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/ocr.ts imports lib/vision.ts"
+    },
+    {
+      "source": "file:app/api/arena/ingest/route.ts",
+      "target": "function:app/api/arena/ingest/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "route.ts contains POST"
+    },
+    {
+      "source": "file:app/api/arena/ingest/route.ts",
+      "target": "function:app/api/arena/ingest/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "route.ts exports POST"
+    },
+    {
+      "source": "file:app/api/arena/ingest/route.ts",
+      "target": "endpoint:app/api/arena/ingest/route.ts:POST-/api/arena/ingest",
+      "type": "routes",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "app/api/arena/ingest/route.ts implements POST /api/arena/ingest"
+    },
+    {
+      "source": "file:app/api/arena/route.ts",
+      "target": "function:app/api/arena/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "route.ts contains GET"
+    },
+    {
+      "source": "file:app/api/arena/route.ts",
+      "target": "function:app/api/arena/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "route.ts exports GET"
+    },
+    {
+      "source": "file:app/api/arena/route.ts",
+      "target": "endpoint:app/api/arena/route.ts:GET-/api/arena",
+      "type": "routes",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "app/api/arena/route.ts implements GET /api/arena"
+    },
+    {
+      "source": "file:lib/arena.ts",
+      "target": "function:lib/arena.ts:parseUserSlug",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "arena.ts contains parseUserSlug"
+    },
+    {
+      "source": "file:lib/arena.ts",
+      "target": "function:lib/arena.ts:parseUserSlug",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "arena.ts exports parseUserSlug"
+    },
+    {
+      "source": "file:lib/arena.ts",
+      "target": "function:lib/arena.ts:arenaFetch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "arena.ts contains arenaFetch"
+    },
+    {
+      "source": "file:lib/arena.ts",
+      "target": "function:lib/arena.ts:getUser",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "arena.ts contains getUser"
+    },
+    {
+      "source": "file:lib/arena.ts",
+      "target": "function:lib/arena.ts:getUser",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "arena.ts exports getUser"
+    },
+    {
+      "source": "file:lib/arena.ts",
+      "target": "function:lib/arena.ts:getUserChannels",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "arena.ts contains getUserChannels"
+    },
+    {
+      "source": "file:lib/arena.ts",
+      "target": "function:lib/arena.ts:getUserChannels",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "arena.ts exports getUserChannels"
+    },
+    {
+      "source": "file:lib/arena.ts",
+      "target": "function:lib/arena.ts:getAllUserChannels",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "arena.ts contains getAllUserChannels"
+    },
+    {
+      "source": "file:lib/arena.ts",
+      "target": "function:lib/arena.ts:getAllUserChannels",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "arena.ts exports getAllUserChannels"
+    },
+    {
+      "source": "file:lib/arena.ts",
+      "target": "function:lib/arena.ts:getChannelContents",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "arena.ts contains getChannelContents"
+    },
+    {
+      "source": "file:lib/arena.ts",
+      "target": "function:lib/arena.ts:getChannelContents",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "arena.ts exports getChannelContents"
+    },
+    {
+      "source": "file:lib/arena.ts",
+      "target": "function:lib/arena.ts:isArenaChannel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "arena.ts contains isArenaChannel"
+    },
+    {
+      "source": "file:lib/arena.ts",
+      "target": "function:lib/arena.ts:isArenaChannel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "arena.ts exports isArenaChannel"
+    },
+    {
+      "source": "file:lib/arena.ts",
+      "target": "function:lib/arena.ts:isArenaBlock",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "arena.ts contains isArenaBlock"
+    },
+    {
+      "source": "file:lib/arena.ts",
+      "target": "function:lib/arena.ts:isArenaBlock",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "arena.ts exports isArenaBlock"
+    },
+    {
+      "source": "file:lib/arena.ts",
+      "target": "class:lib/arena.ts:ArenaError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "arena.ts contains ArenaError"
+    },
+    {
+      "source": "file:lib/arena.ts",
+      "target": "class:lib/arena.ts:ArenaError",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:lib/ingest.ts",
+      "target": "function:lib/ingest.ts:runPool",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "ingest.ts contains runPool"
+    },
+    {
+      "source": "file:lib/ingest.ts",
+      "target": "function:lib/ingest.ts:ingestUser",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "ingest.ts contains ingestUser"
+    },
+    {
+      "source": "file:lib/ingest.ts",
+      "target": "function:lib/ingest.ts:ingestUser",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "ingest.ts exports ingestUser"
+    },
+    {
+      "source": "file:lib/ingest.ts",
+      "target": "function:lib/ingest.ts:logIngestError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "ingest.ts contains logIngestError"
+    },
+    {
+      "source": "file:lib/ingest.ts",
+      "target": "function:lib/ingest.ts:logIngestError",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "ingest.ts exports logIngestError"
+    },
+    {
+      "source": "file:app/api/arena/ingest/route.ts",
+      "target": "file:lib/arena.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "app/api/arena/ingest/route.ts imports lib/arena.ts"
+    },
+    {
+      "source": "file:app/api/arena/ingest/route.ts",
+      "target": "file:lib/ingest.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "app/api/arena/ingest/route.ts imports lib/ingest.ts"
+    },
+    {
+      "source": "file:app/api/arena/route.ts",
+      "target": "file:lib/arena.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "app/api/arena/route.ts imports lib/arena.ts"
+    },
+    {
+      "source": "file:lib/ingest.ts",
+      "target": "file:lib/arena.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/ingest.ts imports lib/arena.ts"
+    },
+    {
+      "source": "file:lib/ingest.ts",
+      "target": "file:lib/db.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/ingest.ts imports lib/db.ts"
+    },
+    {
+      "source": "file:lib/ingest.ts",
+      "target": "file:lib/external-content.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/ingest.ts imports lib/external-content.ts"
+    },
+    {
+      "source": "file:lib/ingest.ts",
+      "target": "file:lib/search-text.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/ingest.ts imports lib/search-text.ts"
+    },
+    {
+      "source": "file:lib/ingest.ts",
+      "target": "file:lib/transcripts.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/ingest.ts imports lib/transcripts.ts"
+    },
+    {
+      "source": "file:app/api/transcripts/route.ts",
+      "target": "function:app/api/transcripts/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "route.ts contains POST"
+    },
+    {
+      "source": "file:app/api/transcripts/route.ts",
+      "target": "function:app/api/transcripts/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "route.ts exports POST"
+    },
+    {
+      "source": "file:app/api/transcripts/route.ts",
+      "target": "endpoint:app/api/transcripts/route.ts:POST-/api/transcripts",
+      "type": "routes",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "app/api/transcripts/route.ts implements POST /api/transcripts"
+    },
+    {
+      "source": "file:lib/transcripts.ts",
+      "target": "function:lib/transcripts.ts:isYouTubeUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "transcripts.ts contains isYouTubeUrl"
+    },
+    {
+      "source": "file:lib/transcripts.ts",
+      "target": "function:lib/transcripts.ts:isYouTubeUrl",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "transcripts.ts exports isYouTubeUrl"
+    },
+    {
+      "source": "file:lib/transcripts.ts",
+      "target": "function:lib/transcripts.ts:spawnYtDlp",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "transcripts.ts contains spawnYtDlp"
+    },
+    {
+      "source": "file:lib/transcripts.ts",
+      "target": "function:lib/transcripts.ts:pickVttFile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "transcripts.ts contains pickVttFile"
+    },
+    {
+      "source": "file:lib/transcripts.ts",
+      "target": "function:lib/transcripts.ts:fetchOne",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "transcripts.ts contains fetchOne"
+    },
+    {
+      "source": "file:lib/transcripts.ts",
+      "target": "function:lib/transcripts.ts:extractPendingTranscripts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "transcripts.ts contains extractPendingTranscripts"
+    },
+    {
+      "source": "file:lib/transcripts.ts",
+      "target": "function:lib/transcripts.ts:extractPendingTranscripts",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "transcripts.ts exports extractPendingTranscripts"
+    },
+    {
+      "source": "file:lib/transcripts.ts",
+      "target": "class:lib/transcripts.ts:YtDlpMissingError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "transcripts.ts contains YtDlpMissingError"
+    },
+    {
+      "source": "file:lib/vtt.ts",
+      "target": "function:lib/vtt.ts:parseVtt",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "vtt.ts contains parseVtt"
+    },
+    {
+      "source": "file:lib/vtt.ts",
+      "target": "function:lib/vtt.ts:parseVtt",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "vtt.ts exports parseVtt"
+    },
+    {
+      "source": "file:app/api/transcripts/route.ts",
+      "target": "file:lib/transcripts.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "app/api/transcripts/route.ts imports lib/transcripts.ts"
+    },
+    {
+      "source": "file:lib/transcripts.test.ts",
+      "target": "file:lib/vtt.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/transcripts.test.ts imports lib/vtt.ts"
+    },
+    {
+      "source": "file:lib/transcripts.ts",
+      "target": "file:lib/chunks.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/transcripts.ts imports lib/chunks.ts"
+    },
+    {
+      "source": "file:lib/transcripts.ts",
+      "target": "file:lib/db.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/transcripts.ts imports lib/db.ts"
+    },
+    {
+      "source": "file:lib/transcripts.ts",
+      "target": "file:lib/search-text.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/transcripts.ts imports lib/search-text.ts"
+    },
+    {
+      "source": "file:lib/transcripts.ts",
+      "target": "file:lib/vtt.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "lib/transcripts.ts imports lib/vtt.ts"
+    },
+    {
+      "source": "file:app/layout.tsx",
+      "target": "function:app/layout.tsx:RootLayout",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "layout.tsx contains RootLayout"
+    },
+    {
+      "source": "file:app/layout.tsx",
+      "target": "function:app/layout.tsx:RootLayout",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "layout.tsx exports RootLayout"
+    },
+    {
+      "source": "schema:data/schema.sql",
+      "target": "table:data/schema.sql:users",
+      "type": "defines_schema",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "schema.sql defines users"
+    },
+    {
+      "source": "schema:data/schema.sql",
+      "target": "table:data/schema.sql:channels",
+      "type": "defines_schema",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "schema.sql defines channels"
+    },
+    {
+      "source": "schema:data/schema.sql",
+      "target": "table:data/schema.sql:blocks",
+      "type": "defines_schema",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "schema.sql defines blocks"
+    },
+    {
+      "source": "schema:data/schema.sql",
+      "target": "table:data/schema.sql:block_channels",
+      "type": "defines_schema",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "schema.sql defines block_channels"
+    },
+    {
+      "source": "schema:data/schema.sql",
+      "target": "table:data/schema.sql:vec_blocks",
+      "type": "defines_schema",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "schema.sql defines vec_blocks"
+    },
+    {
+      "source": "schema:data/schema.sql",
+      "target": "table:data/schema.sql:sync_logs",
+      "type": "defines_schema",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "schema.sql defines sync_logs"
+    },
+    {
+      "source": "schema:data/schema.sql",
+      "target": "table:data/schema.sql:block_ocr",
+      "type": "defines_schema",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "schema.sql defines block_ocr"
+    },
+    {
+      "source": "schema:data/schema.sql",
+      "target": "table:data/schema.sql:block_link_content",
+      "type": "defines_schema",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "schema.sql defines block_link_content"
+    },
+    {
+      "source": "schema:data/schema.sql",
+      "target": "table:data/schema.sql:block_transcripts",
+      "type": "defines_schema",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "schema.sql defines block_transcripts"
+    },
+    {
+      "source": "schema:data/schema.sql",
+      "target": "table:data/schema.sql:block_chunks",
+      "type": "defines_schema",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "schema.sql defines block_chunks"
+    },
+    {
+      "source": "schema:data/schema.sql",
+      "target": "table:data/schema.sql:vec_block_chunks",
+      "type": "defines_schema",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "schema.sql defines vec_block_chunks"
+    },
+    {
+      "source": "file:app/layout.tsx",
+      "target": "file:app/globals.css",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "app/layout.tsx imports app/globals.css"
+    },
+    {
+      "source": "file:lib/transcripts.ts",
+      "target": "file:lib/transcripts.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Path-based pairing (deterministic)"
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:app/page.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "README documents UI usage and search flow"
+    },
+    {
+      "source": "config:package.json",
+      "target": "file:app/page.tsx",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "package.json defines runtime scripts and dependencies for the app"
+    },
+    {
+      "source": "config:tsconfig.json",
+      "target": "file:lib/search-core.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "tsconfig enables TypeScript strictness and path resolution"
+    },
+    {
+      "source": "file:next.config.ts",
+      "target": "file:app/layout.tsx",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Next config applies to the App Router application"
+    },
+    {
+      "source": "file:postcss.config.mjs",
+      "target": "file:app/globals.css",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "PostCSS config wires Tailwind processing for global CSS"
+    },
+    {
+      "source": "config:.env.example",
+      "target": "file:lib/embeddings.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Environment example declares OpenAI key expected by embedding code"
+    },
+    {
+      "source": "pipeline:.github/workflows/ci.yml",
+      "target": "file:lib/transcripts.test.ts",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "CI runs the Node test suite"
+    },
+    {
+      "source": "pipeline:.github/workflows/ci.yml",
+      "target": "file:app/page.tsx",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "CI production build validates the Next.js app"
+    },
+    {
+      "source": "file:evals/queries.jsonl",
+      "target": "file:scripts/eval-search.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Search eval fixture configures the eval runner"
+    },
+    {
+      "source": "file:next-env.d.ts",
+      "target": "config:tsconfig.json",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Next generated ambient types are included by tsconfig"
+    }
+  ],
+  "layers": [
+    {
+      "id": "layer:frontend-ui",
+      "name": "Frontend UI",
+      "description": "React App Router pages, layouts, and CSS that render the research/search interface.",
+      "nodeIds": [
+        "file:app/page.tsx",
+        "file:app/globals.css",
+        "file:app/layout.tsx"
+      ]
+    },
+    {
+      "id": "layer:api-routes",
+      "name": "API Routes",
+      "description": "Next.js route handlers exposing Arena ingestion, enrichment jobs, search, channels, and recommendations.",
+      "nodeIds": [
+        "file:app/api/channels/route.ts",
+        "file:app/api/chunks/route.ts",
+        "file:app/api/embed/route.ts",
+        "file:app/api/recommend-channel/route.ts",
+        "file:app/api/search/route.ts",
+        "file:app/api/external-content/route.ts",
+        "file:app/api/ocr/route.ts",
+        "file:app/api/arena/ingest/route.ts",
+        "file:app/api/arena/route.ts",
+        "file:app/api/transcripts/route.ts",
+        "endpoint:app/api/channels/route.ts:GET-/api/channels",
+        "endpoint:app/api/chunks/route.ts:POST-/api/chunks",
+        "endpoint:app/api/embed/route.ts:POST-/api/embed",
+        "endpoint:app/api/recommend-channel/route.ts:POST-/api/recommend-channel",
+        "endpoint:app/api/search/route.ts:GET-/api/search",
+        "endpoint:app/api/search/route.ts:POST-/api/search",
+        "endpoint:app/api/external-content/route.ts:POST-/api/external-content",
+        "endpoint:app/api/ocr/route.ts:POST-/api/ocr",
+        "endpoint:app/api/arena/ingest/route.ts:POST-/api/arena/ingest",
+        "endpoint:app/api/arena/route.ts:GET-/api/arena",
+        "endpoint:app/api/transcripts/route.ts:POST-/api/transcripts"
+      ]
+    },
+    {
+      "id": "layer:domain-services",
+      "name": "Domain Services",
+      "description": "Library modules that implement Arena client access, ingestion, enrichment, embeddings, search, OCR, transcripts, and content cleaning.",
+      "nodeIds": [
+        "file:lib/chunks.ts",
+        "file:lib/db.ts",
+        "file:lib/embed-blocks.ts",
+        "file:lib/embeddings.ts",
+        "file:lib/query-image-limits.ts",
+        "file:lib/search-core.ts",
+        "file:lib/vision-query.ts",
+        "file:lib/vision.ts",
+        "file:lib/external-content.ts",
+        "file:lib/link-clean.ts",
+        "file:lib/ocr.ts",
+        "file:lib/search-text.ts",
+        "file:lib/arena.ts",
+        "file:lib/ingest.ts",
+        "file:lib/transcripts.test.ts",
+        "file:lib/transcripts.ts",
+        "file:lib/vtt.ts"
+      ]
+    },
+    {
+      "id": "layer:data-storage",
+      "name": "Data and Storage",
+      "description": "SQLite schema, vector indexes, and data fixtures used by search evaluation and persistence checks.",
+      "nodeIds": [
+        "schema:data/schema.sql",
+        "file:evals/queries.jsonl",
+        "table:data/schema.sql:users",
+        "table:data/schema.sql:channels",
+        "table:data/schema.sql:blocks",
+        "table:data/schema.sql:block_channels",
+        "table:data/schema.sql:vec_blocks",
+        "table:data/schema.sql:sync_logs",
+        "table:data/schema.sql:block_ocr",
+        "table:data/schema.sql:block_link_content",
+        "table:data/schema.sql:block_transcripts",
+        "table:data/schema.sql:block_chunks",
+        "table:data/schema.sql:vec_block_chunks"
+      ]
+    },
+    {
+      "id": "layer:tooling-ci",
+      "name": "Tooling and CI",
+      "description": "Project scripts, package/tool configuration, and GitHub Actions workflow that verify and operate the codebase.",
+      "nodeIds": [
+        "file:scripts/check-stale.ts",
+        "file:scripts/eval-search.ts",
+        "pipeline:.github/workflows/ci.yml",
+        "config:.env.example",
+        "config:package.json",
+        "config:tsconfig.json",
+        "file:next.config.ts",
+        "file:postcss.config.mjs"
+      ]
+    },
+    {
+      "id": "layer:documentation",
+      "name": "Documentation",
+      "description": "Human-facing project setup and usage documentation.",
+      "nodeIds": [
+        "document:README.md"
+      ]
+    },
+    {
+      "id": "layer:miscellaneous",
+      "name": "Miscellaneous",
+      "description": "Remaining files that do not fit the primary architectural groupings.",
+      "nodeIds": [
+        "file:next-env.d.ts"
+      ]
+    }
+  ],
+  "tour": [
+    {
+      "order": 1,
+      "title": "Project Overview",
+      "description": "Start with the README to understand the app purpose, setup flow, search API, and stack choices.",
+      "nodeIds": [
+        "document:README.md"
+      ]
+    },
+    {
+      "order": 2,
+      "title": "Application Shell and UI",
+      "description": "Inspect the App Router layout and the main React page that drives channel browsing, enrichment actions, and search interactions.",
+      "nodeIds": [
+        "file:app/layout.tsx",
+        "file:app/page.tsx",
+        "file:app/globals.css"
+      ]
+    },
+    {
+      "order": 3,
+      "title": "Persistent Data Model",
+      "description": "Review the canonical SQLite schema and database bootstrapper before following ingestion or search flows.",
+      "nodeIds": [
+        "schema:data/schema.sql",
+        "file:lib/db.ts"
+      ]
+    },
+    {
+      "order": 4,
+      "title": "Arena Ingestion Pipeline",
+      "description": "Follow how Arena users, channels, and blocks are fetched, normalized, stored, and exposed through API routes.",
+      "nodeIds": [
+        "file:app/api/arena/route.ts",
+        "file:app/api/arena/ingest/route.ts",
+        "file:lib/arena.ts",
+        "file:lib/ingest.ts"
+      ]
+    },
+    {
+      "order": 5,
+      "title": "Content Enrichment Jobs",
+      "description": "Understand OCR, external content fetching, transcript extraction, search text construction, and chunk creation before embedding.",
+      "nodeIds": [
+        "file:app/api/ocr/route.ts",
+        "file:app/api/external-content/route.ts",
+        "file:app/api/transcripts/route.ts",
+        "file:app/api/chunks/route.ts",
+        "file:lib/ocr.ts",
+        "file:lib/external-content.ts",
+        "file:lib/transcripts.ts",
+        "file:lib/search-text.ts",
+        "file:lib/chunks.ts"
+      ]
+    },
+    {
+      "order": 6,
+      "title": "Embedding and Search",
+      "description": "Trace how pending blocks/chunks are embedded and how text/image search queries flow through sqlite-vec plus lexical reranking.",
+      "nodeIds": [
+        "file:app/api/embed/route.ts",
+        "file:app/api/search/route.ts",
+        "file:lib/embed-blocks.ts",
+        "file:lib/embeddings.ts",
+        "file:lib/search-core.ts",
+        "file:lib/vision-query.ts"
+      ]
+    },
+    {
+      "order": 7,
+      "title": "Safety and Regression Checks",
+      "description": "Finish with CI, unit tests, semantic search evals, and stale-embedding detection scripts that protect the system from obvious drift.",
+      "nodeIds": [
+        "pipeline:.github/workflows/ci.yml",
+        "file:lib/transcripts.test.ts",
+        "file:scripts/eval-search.ts",
+        "file:evals/queries.jsonl",
+        "file:scripts/check-stale.ts"
+      ]
+    }
+  ]
+}
