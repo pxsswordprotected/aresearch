@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test 'lib/**/*.test.ts'",
     "eval": "node --env-file=.env.local scripts/eval-search.ts",
-    "check:stale": "node scripts/check-stale.ts"
+    "check:stale": "node scripts/check-stale.ts",
+    "lint:spacing": "node scripts/check-even-spacing.ts"
   },
   "dependencies": {
     "better-sqlite3": "^11.3.0",
