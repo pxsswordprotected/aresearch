@@ -19,6 +19,22 @@
 
   --font-sans: Arial, Helvetica, sans-serif;
 
-  --shadow-base: 0 2px 3.6px 0 rgb(0 0 0 / 0.10);
-  --shadow-inner-base: inset 2px 2px 12.5px -4px rgb(253 253 253 / 0.85);
+  /* Asymmetric drop: tight contact + soft ambient. Matches top-down light. */
+  --shadow-base:
+    0 1px 1px rgb(0 0 0 / 0.05),
+    0 6px 14px -6px rgb(0 0 0 / 0.12);
+
+  /* Top highlight + bottom darken + the original soft inner gleam.
+     Together they read as a raised, slightly domed surface. */
+  --shadow-inner-base:
+    inset 0 1px 0 rgb(255 255 255 / 0.9),
+    inset 0 -1px 0 rgb(0 0 0 / 0.06),
+    inset 2px 2px 12.5px -4px rgb(253 253 253 / 0.85);
+
+  /* Subtle vertical sheen layered over --color-dashboard. */
+  --gradient-panel: linear-gradient(
+    to bottom,
+    rgb(255 255 255 / 0.55),
+    rgb(0 0 0 / 0.03)
+  );
 }
