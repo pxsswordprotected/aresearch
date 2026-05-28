@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Funnel } from "@phosphor-icons/react/dist/ssr";
 import Button from "@/components/Button";
 import { Panel } from "@/components/dashboard/panel";
 import { cn } from "@/lib/utils";
+import { BlocksTableBody } from "./BlocksTableBody";
+import { BlocksTableBodySkeleton } from "./BlocksTableBodySkeleton";
+import { BLOCK_GRID_COLUMNS } from "./columns";
 
 type ChannelSummary = {
   id: number;
@@ -16,9 +19,6 @@ type BlocksTableCardProps = {
   className?: string;
   selectedChannels?: ChannelSummary[];
 };
-
-const BLOCK_GRID_COLUMNS =
-  "4rem minmax(12rem, 1.2fr) 8rem minmax(10rem, 1fr) minmax(16rem, 2fr) 5rem";
 
 export function BlocksTableCard({
   className,
@@ -69,7 +69,7 @@ export function BlocksTableCard({
       <div className="mt-4 h-px shrink-0 bg-stroke" />
 
       <div
-        className="mt-4 grid gap-4 px-6 text-sm leading-5 font-bold text-neutral-800"
+        className="mt-4 grid gap-4 px-6 text-base leading-5 font-bold text-neutral-800"
         style={{ gridTemplateColumns: BLOCK_GRID_COLUMNS }}
       >
         <div>Rank</div>
@@ -81,6 +81,10 @@ export function BlocksTableCard({
       </div>
 
       <div className="mt-4 h-px shrink-0 bg-stroke" />
+
+      <Suspense fallback={<BlocksTableBodySkeleton />}>
+        <BlocksTableBody />
+      </Suspense>
     </Panel>
   );
 }
