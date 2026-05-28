@@ -1,11 +1,22 @@
 import { Panel } from "@/components/dashboard/panel";
+import { cn } from "@/lib/utils";
 
 export function BrandCard({ className }: { className?: string }) {
   return (
-    <Panel className={className}>
-      <div className="flex h-full w-full items-center justify-center">
-        BrandCard
-      </div>
+    <Panel
+      className={cn(
+        "flex flex-col items-center justify-center select-none",
+        className,
+      )}
+    >
+      <p className="text-xl ">Aresearch v1.0</p>
+      <a
+        href="https://github.com/pxsswordprotected/aresearch"
+        target="_blank"
+        className="text-link-external underline"
+      >
+        Github
+      </a>
     </Panel>
   );
 }
