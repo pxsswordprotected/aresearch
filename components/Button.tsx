@@ -1,4 +1,5 @@
 import { forwardRef, type ButtonHTMLAttributes } from "react";
+import { cn } from "@/lib/utils";
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement>;
 
@@ -24,11 +25,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   { className = "", style, type = "button", disabled, ...rest },
   ref,
 ) {
-  const merged =
-    "inline-flex items-center justify-center rounded-base px-4 py-2 " +
-    "text-sm font-bold text-white select-none transition-opacity " +
-    "disabled:opacity-50 disabled:cursor-not-allowed " +
-    className;
+  const merged = cn(
+    "inline-flex items-center justify-center rounded-base px-4 py-2",
+    "text-sm font-bold text-white select-none transition-opacity",
+    "disabled:opacity-50 disabled:cursor-not-allowed",
+    className,
+  );
 
   return (
     <button
