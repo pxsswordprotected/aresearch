@@ -4,12 +4,18 @@ import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Hit } from "@/lib/search-core";
 
-// Default page size; matches the Channels card cadence.
-const DEFAULT_PAGE_SIZE = 8;
+// Default page size; matches the Channels card cadence. Exported so
+// BlocksTableContent can size its slot count to the same value — that
+// keeps the auto-distributed inter-row gap identical across pages
+// whether or not the current page is full.
+export const DEFAULT_PAGE_SIZE = 8;
 
-// Module-scoped cache. Keyed on `${q}:${page}:${pageSize}` so that
-// future server-side pagination (which will key on the same triple)
-// drops in without changing call sites. No TTL — cleared on reload.
+// Module-scoped cache. The server today returns the full top-N for any
+// given `q` regardless of page/pageSize (client slices), so we key the
+// cache on `q` alone — clicking page numbers becomes a free re-slice
+// instead of a refetch of identical data. When server-side pagination
+// lands, the key gains the `:${page}:${pageSize}` suffix and nothing
+// else in the hook changes. No TTL — cleared on reload.
 const cache = new Map<string, Hit[]>();
 
 type IdleState = {
@@ -133,7 +139,9 @@ export function useSearchHits(): UseSearchHitsResult {
     params.get("pageSize"),
     DEFAULT_PAGE_SIZE,
   );
-  const key = `${q}:${page}:${pageSize}`;
+  // Cache key — see comment on `cache` at top-of-file for why this is
+  // currently `q` only and not the full `${q}:${page}:${pageSize}`.
+  const key = q;
 
   // Bumping this counter re-runs the fetch effect for retry.
   const [retryNonce, setRetryNonce] = useState(0);
@@ -187,7 +195,7 @@ export function useSearchHits(): UseSearchHitsResult {
     return () => ctrl.abort();
     // retryNonce is intentionally a dependency: bumping it forces the
     // effect to re-run with the same q/page/pageSize.
-  }, [q, key, page, pageSize, retryNonce]);
+  }, [q, page, pageSize, retryNonce]);
 
   const retry = useCallback(() => {
     cache.delete(key);

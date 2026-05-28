@@ -22,7 +22,7 @@ export function BlockRow({ hit, index, page, pageSize }: BlockRowProps) {
 
   return (
     <div
-      className="grid items-center gap-4 px-6 py-2 text-base text-neutral-800"
+      className="grid items-center gap-4 px-6 text-base text-neutral-800"
       style={{ gridTemplateColumns: BLOCK_GRID_COLUMNS }}
     >
       <div className="tabular-nums text-black/50">

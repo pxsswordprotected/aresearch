@@ -5,8 +5,8 @@ import { Funnel } from "@phosphor-icons/react/dist/ssr";
 import Button from "@/components/Button";
 import { Panel } from "@/components/dashboard/panel";
 import { cn } from "@/lib/utils";
-import { BlocksTableBody } from "./BlocksTableBody";
-import { BlocksTableBodySkeleton } from "./BlocksTableBodySkeleton";
+import { BlocksTableContent } from "./BlocksTableContent";
+import { BlocksTableContentSkeleton } from "./BlocksTableContentSkeleton";
 import { BLOCK_GRID_COLUMNS } from "./columns";
 
 type ChannelSummary = {
@@ -82,8 +82,8 @@ export function BlocksTableCard({
 
       <div className="mt-4 h-px shrink-0 bg-stroke" />
 
-      <Suspense fallback={<BlocksTableBodySkeleton />}>
-        <BlocksTableBody />
+      <Suspense fallback={<BlocksTableContentSkeleton />}>
+        <BlocksTableContent />
       </Suspense>
     </Panel>
   );
