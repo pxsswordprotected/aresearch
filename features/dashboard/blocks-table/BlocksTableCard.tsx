@@ -1,11 +1,106 @@
-import { Panel } from "@/components/dashboard/panel";
+"use client";
 
-export function BlocksTableCard({ className }: { className?: string }) {
+import { useEffect, useState } from "react";
+import { Funnel } from "@phosphor-icons/react/dist/ssr";
+import Button from "@/components/Button";
+import { Panel } from "@/components/dashboard/panel";
+import { cn } from "@/lib/utils";
+
+type ChannelSummary = {
+  id: number;
+  title: string | null;
+  block_count: number;
+};
+
+type BlocksTableCardProps = {
+  className?: string;
+  selectedChannels?: ChannelSummary[];
+};
+
+const BLOCK_GRID_COLUMNS =
+  "4rem minmax(12rem, 1.2fr) 8rem minmax(10rem, 1fr) minmax(16rem, 2fr) 5rem";
+
+export function BlocksTableCard({
+  className,
+  selectedChannels = [],
+}: BlocksTableCardProps) {
+  const [totalBlocks, setTotalBlocks] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadBlockSummary() {
+      try {
+        const res = await fetch("/api/blocks/summary");
+        const body = (await res.json()) as
+          | { block_count: number }
+          | { error: string };
+        if (!res.ok || "error" in body) return;
+        if (!cancelled) setTotalBlocks(body.block_count);
+      } catch (err) {
+        console.error("[BlocksTableCard]", err);
+      }
+    }
+
+    void loadBlockSummary();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const heading = formatBlocksFor(selectedChannels, totalBlocks);
+
   return (
-    <Panel className={className}>
-      <div className="flex h-full w-full items-center justify-center">
-        BlocksTableCard
+    <Panel className={cn("flex flex-col py-4", className)}>
+      <header className="relative h-5 px-6">
+        <h2 className="min-w-0 truncate text-base leading-5 font-bold text-neutral-800">
+          <span className="text-black/50">Blocks for: </span>
+          {heading}
+        </h2>
+        <Button
+          type="button"
+          className="absolute top-1/2 right-6 -translate-y-1/2 gap-1.5 px-3 py-1 text-sm leading-5 font-bold"
+        >
+          <Funnel size={18} weight="bold" />
+          Filter
+        </Button>
+      </header>
+
+      <div className="mt-4 h-px shrink-0 bg-stroke" />
+
+      <div
+        className="mt-4 grid gap-4 px-6 text-sm leading-5 font-bold text-neutral-800"
+        style={{ gridTemplateColumns: BLOCK_GRID_COLUMNS }}
+      >
+        <div>Rank</div>
+        <div>Title</div>
+        <div>Type</div>
+        <div>Channel</div>
+        <div>Snippet</div>
+        <div>Actions</div>
       </div>
+
+      <div className="mt-4 h-px shrink-0 bg-stroke" />
     </Panel>
   );
+}
+
+function formatBlocksFor(
+  channels: ChannelSummary[],
+  totalBlocks: number,
+): string {
+  if (channels.length === 0) {
+    return `All channels (${totalBlocks} blocks)`;
+  }
+
+  const names = channels
+    .slice(0, 2)
+    .map((channel) => channel.title?.trim() || "(untitled)");
+  const remaining = channels.length - names.length;
+  const selectedBlocks = channels.reduce(
+    (sum, channel) => sum + channel.block_count,
+    0,
+  );
+
+  return `${names.join(", ")}${remaining > 0 ? `, +${remaining} more` : ""} (${selectedBlocks} blocks)`;
 }

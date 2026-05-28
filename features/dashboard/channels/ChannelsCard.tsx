@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react/dist/ssr";
 import { Panel } from "@/components/dashboard/panel";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,17 @@ type IndexedChannel = {
   block_count: number;
 };
 
-const CHANNELS_PER_PAGE = 3;
+const CHANNELS_PER_PAGE = 8;
+
+const SELECTED_ROW_STYLE = {
+  backgroundColor: "#141414",
+  boxShadow: [
+    "0 1px 1.7px rgb(0 0 0 / 0.19)",
+    "inset 0 0 0 1px rgb(0 0 0 / 0.10)",
+    "inset -1px -1px 3.6px rgb(245 245 245 / 0.82)",
+    "inset 0 0 7.6px rgb(255 255 255 / 0.40)",
+  ].join(", "),
+} satisfies CSSProperties;
 
 export function ChannelsCard({ className }: { className?: string }) {
   const [channels, setChannels] = useState<IndexedChannel[] | null>(null);
@@ -91,12 +101,14 @@ export function ChannelsCard({ className }: { className?: string }) {
   }
 
   return (
-    <Panel className={cn("flex flex-col px-6 py-4", className)}>
-      <h2 className="text-xl leading-5 font-bold text-neutral-800">Channels</h2>
+    <Panel className={cn("flex flex-col py-4", className)}>
+      <h2 className="px-6 text-xl leading-5 font-bold text-neutral-800">
+        Channels
+      </h2>
 
       <div className="mt-4 h-px shrink-0 bg-stroke" />
 
-      <div className="mt-4 flex min-h-0 flex-1 flex-col justify-between">
+      <div className="mt-4 flex min-h-0 flex-1 flex-col justify-between px-6">
         {channelsError ? (
           <div className="text-sm text-error">
             Couldn&apos;t load channels: {channelsError}.{" "}
@@ -139,7 +151,7 @@ export function ChannelsCard({ className }: { className?: string }) {
 
       <div className="mt-4 h-px shrink-0 bg-stroke" />
 
-      <div className="mt-4 flex items-center justify-between gap-3 text-sm text-black/50">
+      <div className="mt-4 flex items-center justify-between gap-3 px-6 text-sm text-black/50">
         <p>
           Showing {showingStart}-{showingEnd} of {totalChannels} channels
         </p>
@@ -189,17 +201,30 @@ function ChannelRow({
       onClick={onClick}
       aria-pressed={selected}
       className={cn(
-        "flex w-full items-center justify-between gap-3 rounded-base py-1 text-left text-sm leading-5 transition-colors",
-        selected
-          ? "bg-neutral-800 text-white"
-          : "text-neutral-800 hover:bg-black/5",
-        disabled && "cursor-not-allowed opacity-40 hover:bg-transparent",
+        "group relative flex w-full items-center justify-between gap-3 rounded-base py-1 text-left text-sm leading-5 transition-colors",
+        selected ? "text-white" : "text-neutral-800",
+        disabled && "cursor-not-allowed opacity-40",
       )}
     >
-      <span className="min-w-0 max-w-[24ch] shrink overflow-hidden whitespace-nowrap">
+      {selected ? (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -inset-y-0.5 -left-2 -right-2 rounded-base"
+          style={SELECTED_ROW_STYLE}
+        />
+      ) : (
+        <span
+          aria-hidden="true"
+          className={cn(
+            "pointer-events-none absolute -inset-y-0.5 -left-2 -right-2 rounded-base bg-black/5 opacity-0 transition-opacity group-hover:opacity-100",
+            disabled && "group-hover:opacity-0",
+          )}
+        />
+      )}
+      <span className="relative z-10 min-w-0 max-w-[24ch] shrink overflow-hidden whitespace-nowrap">
         {truncateChannelLabel(label)}
       </span>
-      <span className="shrink-0 tabular-nums">{count}</span>
+      <span className="relative z-10 shrink-0 tabular-nums">{count}</span>
     </button>
   );
 }
