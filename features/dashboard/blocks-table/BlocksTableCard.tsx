@@ -8,12 +8,8 @@ import { cn } from "@/lib/utils";
 import { BlocksTableContent } from "./BlocksTableContent";
 import { BlocksTableContentSkeleton } from "./BlocksTableContentSkeleton";
 import { BLOCK_GRID_COLUMNS } from "./columns";
+import type { ChannelSummary } from "../channels/types";
 
-type ChannelSummary = {
-  id: number;
-  title: string | null;
-  block_count: number;
-};
 
 type BlocksTableCardProps = {
   className?: string;

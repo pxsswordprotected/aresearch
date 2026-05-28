@@ -4,15 +4,18 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react/dist/ssr";
 import { Panel } from "@/components/dashboard/panel";
 import { cn } from "@/lib/utils";
+import type { ChannelSummary } from "./types";
 
-type IndexedChannel = {
-  id: number;
-  title: string | null;
+type IndexedChannel = ChannelSummary & {
   slug: string | null;
   url: string | null;
-  block_count: number;
 };
 
+
+type ChannelsCardProps = {
+  className?: string;
+  onSelectionChange?: (channels: ChannelSummary[]) => void;
+};
 const CHANNELS_PER_PAGE = 8;
 
 const SELECTED_ROW_STYLE = {
@@ -25,7 +28,10 @@ const SELECTED_ROW_STYLE = {
   ].join(", "),
 } satisfies CSSProperties;
 
-export function ChannelsCard({ className }: { className?: string }) {
+export function ChannelsCard({
+  className,
+  onSelectionChange,
+}: ChannelsCardProps) {
   const [channels, setChannels] = useState<IndexedChannel[] | null>(null);
   const [channelsLoading, setChannelsLoading] = useState(false);
   const [channelsError, setChannelsError] = useState<string | null>(null);
@@ -80,6 +86,17 @@ export function ChannelsCard({ className }: { className?: string }) {
     () => channels?.reduce((sum, c) => sum + c.block_count, 0) ?? 0,
     [channels],
   );
+  const selectedChannels = useMemo<ChannelSummary[]>(() => {
+    if (!channels || selectedChannelIds.size === 0) return [];
+    return channels
+      .filter((channel) => selectedChannelIds.has(channel.id))
+      .map(({ id, title, block_count }) => ({ id, title, block_count }));
+  }, [channels, selectedChannelIds]);
+
+  useEffect(() => {
+    onSelectionChange?.(selectedChannels);
+  }, [onSelectionChange, selectedChannels]);
+
   const showingStart =
     totalChannels === 0 ? 0 : safePage * CHANNELS_PER_PAGE + 1;
   const showingEnd = Math.min(
