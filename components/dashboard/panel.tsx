@@ -4,7 +4,7 @@
 import { cn } from "@/lib/utils";
 
 const SHELL =
-  "rounded-base border border-stroke bg-dashboard bg-[image:var(--gradient-panel)] font-sans text-black shadow-[var(--shadow-base),var(--shadow-inner-base)]";
+  "rounded-base border border-stroke bg-dashboard bg-[image:var(--gradient-panel)] font-sans text-black select-none shadow-[var(--shadow-base),var(--shadow-inner-base)]";
 
 export function Panel({
   className,

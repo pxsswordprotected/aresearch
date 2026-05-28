@@ -13,7 +13,7 @@ export function BrandCard({ className }: { className?: string }) {
       <a
         href="https://github.com/pxsswordprotected/aresearch"
         target="_blank"
-        className="text-link-external underline"
+        className="text-link-external underline text-sm"
       >
         Github
       </a>
