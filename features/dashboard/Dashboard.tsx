@@ -10,6 +10,7 @@ import { SIDEBAR_W } from "@/features/dashboard/layout";
 import { ProfileCard } from "@/features/dashboard/profile/ProfileCard";
 import { RankingTableCard } from "@/features/dashboard/ranking-table/RankingTableCard";
 import { RecQueryInputCard } from "@/features/dashboard/rec-query-input/RecQueryInputCard";
+import type { RecommendationState } from "@/features/dashboard/recommendations/types";
 import { SearchCard } from "@/features/dashboard/search/SearchCard";
 import { SyncCard } from "@/features/dashboard/sync/SyncCard";
 
@@ -18,6 +19,9 @@ export function Dashboard() {
     [],
   );
 
+  const [recommendation, setRecommendation] = useState<RecommendationState>({
+    status: "idle",
+  });
   const onChannelSelectionChange = useCallback((channels: ChannelSummary[]) => {
     setSelectedChannels(channels);
   }, []);
@@ -52,8 +56,14 @@ export function Dashboard() {
             selectedChannels={selectedChannels}
           />
           <div className="flex w-full flex-1 flex-row">
-            <RecQueryInputCard className="h-full flex-[1] rounded-r-none border-r-0" />
-            <RankingTableCard className="h-full flex-[2] rounded-l-none" />
+            <RecQueryInputCard
+              className="h-full flex-[1] rounded-r-none border-r-0"
+              onStateChange={setRecommendation}
+            />
+            <RankingTableCard
+              className="h-full flex-[2] rounded-l-none"
+              recommendation={recommendation}
+            />
           </div>
         </div>
       </div>
