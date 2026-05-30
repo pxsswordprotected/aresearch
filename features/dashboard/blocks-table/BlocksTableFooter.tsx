@@ -41,12 +41,11 @@ export function BlocksTableFooter({
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const start = (page - 1) * pageSize + 1;
   const end = Math.min(page * pageSize, totalCount);
-  const noun = totalCount === 1 ? "block" : "blocks";
 
   return (
     <div className={FOOTER_SHELL}>
-      <span className="text-sm text-black/50">
-        Showing {start}-{end} of {totalCount} {noun}
+      <span className="text-sm whitespace-nowrap text-black/50">
+        Showing {start}–{end} of {totalCount}
       </span>
       <Pagination current={page} total={totalPages} />
     </div>
@@ -74,7 +73,7 @@ function Pagination({ current, total }: { current: number; total: number }) {
   const items = getPageItems(current, total);
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex shrink-0 items-center gap-1">
       <Button
         variant="muted"
         aria-label="Previous page"

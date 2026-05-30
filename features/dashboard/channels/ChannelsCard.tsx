@@ -217,10 +217,10 @@ function ChannelsCardInner({
       <div className="mt-4 h-px shrink-0 bg-stroke" />
 
       <div className="mt-4 flex items-center justify-between gap-3 px-6 text-sm text-black/50">
-        <p>
-          Showing {showingStart}-{showingEnd} of {totalChannels} channels
+        <p className="whitespace-nowrap">
+          Showing {showingStart}–{showingEnd} of {totalChannels}
         </p>
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           <Button
             variant="muted"
             aria-label="Previous channel page"
