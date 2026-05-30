@@ -1,0 +1,87 @@
+import { NextResponse } from "next/server";
+import {
+  ADMIN_COOKIE_NAME,
+  adminCookieOptions,
+  createCurrentAdminSessionToken,
+  getConfiguredAdminAuth,
+} from "@/lib/admin-auth";
+import { isAdminAuthConfigured, verifyAdminPassword } from "@/lib/admin-auth-core";
+
+export const runtime = "nodejs";
+
+type LoginBody = { password?: unknown };
+
+export async function POST(req: Request) {
+  const wantsJson = wantsJsonResponse(req);
+  const config = getConfiguredAdminAuth();
+  if (!isAdminAuthConfigured(config)) {
+    return authFailure(req, wantsJson, "config", 500, "Admin auth is not configured");
+  }
+
+  const parsed = await readPassword(req);
+  if (!parsed.ok) {
+    return authFailure(req, wantsJson, "missing", 400, parsed.error);
+  }
+
+  if (!verifyAdminPassword(parsed.password, config.password)) {
+    return authFailure(req, wantsJson, "invalid", 401, "Invalid password");
+  }
+
+  const token = createCurrentAdminSessionToken();
+  const res = wantsJson
+    ? NextResponse.json({ ok: true })
+    : NextResponse.redirect(new URL("/dev", req.url), { status: 303 });
+  res.cookies.set(ADMIN_COOKIE_NAME, token, adminCookieOptions());
+  return res;
+}
+
+async function readPassword(
+  req: Request,
+): Promise<{ ok: true; password: string } | { ok: false; error: string }> {
+  const contentType = req.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
+    let body: LoginBody;
+    try {
+      body = (await req.json()) as LoginBody;
+    } catch {
+      return { ok: false, error: "Invalid JSON body" };
+    }
+    if (typeof body.password !== "string" || body.password.length === 0) {
+      return { ok: false, error: "Password is required" };
+    }
+    return { ok: true, password: body.password };
+  }
+
+  let form: FormData;
+  try {
+    form = await req.formData();
+  } catch {
+    return { ok: false, error: "Invalid form body" };
+  }
+  const password = form.get("password");
+  if (typeof password !== "string" || password.length === 0) {
+    return { ok: false, error: "Password is required" };
+  }
+  return { ok: true, password };
+}
+
+function wantsJsonResponse(req: Request): boolean {
+  const contentType = req.headers.get("content-type") ?? "";
+  const accept = req.headers.get("accept") ?? "";
+  return contentType.includes("application/json") || accept.includes("application/json");
+}
+
+function authFailure(
+  req: Request,
+  wantsJson: boolean,
+  code: string,
+  status: number,
+  message: string,
+) {
+  if (wantsJson) {
+    return NextResponse.json({ error: message }, { status });
+  }
+  const url = new URL("/dev", req.url);
+  url.searchParams.set("error", code);
+  return NextResponse.redirect(url, { status: 303 });
+}

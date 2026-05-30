@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "node --test 'lib/**/*.test.ts'",
+    "test": "node --test 'lib/**/*.test.ts' 'features/**/*.test.ts'",
     "eval": "node --env-file=.env.local scripts/eval-search.ts",
     "check:stale": "node scripts/check-stale.ts",
     "lint:spacing": "node scripts/check-even-spacing.ts"
