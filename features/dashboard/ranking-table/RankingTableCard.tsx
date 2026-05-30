@@ -23,16 +23,9 @@ export function RankingTableCard({
 }: RankingTableCardProps) {
   return (
     <Panel className={cn("flex flex-col py-4", className)}>
-      <header className="px-6">
-        <h2 className="text-base leading-5 font-bold text-neutral-800">
-          Recommended channels
-        </h2>
-      </header>
-
-      <div className="mt-4 h-px shrink-0 bg-stroke" />
 
       <div
-        className="mt-4 grid gap-4 px-6 text-base leading-5 font-bold text-neutral-800"
+        className="grid gap-4 px-6 text-base leading-5 font-bold text-neutral-800"
         style={{ gridTemplateColumns: RECOMMENDATION_GRID_COLUMNS }}
       >
         <div>Rank</div>
