@@ -22,7 +22,7 @@ export default async function DevPage({ searchParams }: DevPageProps) {
             Log out
           </button>
         </form>
-        <Dashboard />
+        <Dashboard ownerMode />
       </>
     );
   }

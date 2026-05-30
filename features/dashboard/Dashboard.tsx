@@ -14,7 +14,7 @@ import type { RecommendationState } from "@/features/dashboard/recommendations/t
 import { SearchCard } from "@/features/dashboard/search/SearchCard";
 import { SyncCard } from "@/features/dashboard/sync/SyncCard";
 
-export function Dashboard() {
+export function Dashboard({ ownerMode = false }: { ownerMode?: boolean }) {
   const [selectedChannels, setSelectedChannels] = useState<ChannelSummary[]>(
     [],
   );
@@ -46,7 +46,7 @@ export function Dashboard() {
             className="h-[520px] shrink-0"
             onSelectionChange={onChannelSelectionChange}
           />
-          <DeveloperPanelCard className="flex-1" />
+          <DeveloperPanelCard className="flex-1" ownerMode={ownerMode} />
         </div>
 
         {/* MAIN CONTENT */}
