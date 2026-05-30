@@ -11,11 +11,12 @@ import type { Hit } from "@/lib/search-core";
 export const DEFAULT_PAGE_SIZE = 8;
 
 // Module-scoped cache. The server today returns the full top-N for any
-// given `q` regardless of page/pageSize (client slices), so we key the
-// cache on `q` alone — clicking page numbers becomes a free re-slice
-// instead of a refetch of identical data. When server-side pagination
-// lands, the key gains the `:${page}:${pageSize}` suffix and nothing
-// else in the hook changes. No TTL — cleared on reload.
+// given q/channels pair regardless of page/pageSize (client slices), so
+// we key the cache on q plus channels — clicking page numbers becomes a
+// free re-slice instead of a refetch of identical data, while changing
+// the active channel filter gets an isolated result set. When server-side
+// pagination lands, the key gains the `:${page}:${pageSize}` suffix and
+// nothing else in the hook changes. No TTL — cleared on reload.
 const cache = new Map<string, Hit[]>();
 
 type IdleState = {
@@ -134,14 +135,15 @@ type SearchResponse = { query: string; hits: Hit[] } | { error: string };
 export function useSearchHits(): UseSearchHitsResult {
   const params = useSearchParams();
   const q = (params.get("q") ?? "").trim();
+  const channels = (params.get("channels") ?? "").trim();
   const page = parsePositiveInt(params.get("page"), 1);
   const pageSize = parsePositiveInt(
     params.get("pageSize"),
     DEFAULT_PAGE_SIZE,
   );
   // Cache key — see comment on `cache` at top-of-file for why this is
-  // currently `q` only and not the full `${q}:${page}:${pageSize}`.
-  const key = q;
+  // q/channels only and not the full `${q}:${channels}:${page}:${pageSize}`.
+  const key = `${q}|${channels}`;
 
   // Bumping this counter re-runs the fetch effect for retry.
   const [retryNonce, setRetryNonce] = useState(0);
@@ -172,10 +174,11 @@ export function useSearchHits(): UseSearchHitsResult {
 
     (async () => {
       try {
-        const res = await fetch(
-          `/api/search?q=${encodeURIComponent(q)}`,
-          { signal: ctrl.signal },
-        );
+        const requestParams = new URLSearchParams({ q });
+        if (channels) requestParams.set("channels", channels);
+        const res = await fetch(`/api/search?${requestParams.toString()}`, {
+          signal: ctrl.signal,
+        });
         const body = (await res.json()) as SearchResponse;
         if (ctrl.signal.aborted) return;
         if (!res.ok || "error" in body) {
@@ -194,8 +197,8 @@ export function useSearchHits(): UseSearchHitsResult {
 
     return () => ctrl.abort();
     // retryNonce is intentionally a dependency: bumping it forces the
-    // effect to re-run with the same q/page/pageSize.
-  }, [q, page, pageSize, retryNonce]);
+    // effect to re-run with the same q/channels/page/pageSize.
+  }, [q, channels, page, pageSize, key, retryNonce]);
 
   const retry = useCallback(() => {
     cache.delete(key);

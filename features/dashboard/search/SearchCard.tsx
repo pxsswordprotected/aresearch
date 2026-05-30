@@ -1,7 +1,11 @@
 "use client";
 
-import { Suspense, useRef, useState, useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState, useTransition } from "react";
+import {
+  useRouter,
+  useSearchParams,
+  type ReadonlyURLSearchParams,
+} from "next/navigation";
 import {
   Image as ImageIcon,
   MagnifyingGlass,
@@ -26,15 +30,25 @@ export function SearchCard({ className }: { className?: string }) {
 
 function SearchFormFromParams() {
   const params = useSearchParams();
-  return <SearchForm initialQuery={params.get("q") ?? ""} />;
+  return <SearchForm initialQuery={params.get("q") ?? ""} params={params} />;
 }
 
-function SearchForm({ initialQuery }: { initialQuery: string }) {
+function SearchForm({
+  initialQuery,
+  params,
+}: {
+  initialQuery: string;
+  params?: ReadonlyURLSearchParams | null;
+}) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
   const [searching, setSearching] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const hasText = query.trim().length > 0;
+
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
 
   // Wrap the navigation in a transition so the underlying RSC fetch is
   // managed by React's transition lifecycle: errors propagate through
@@ -45,10 +59,15 @@ function SearchForm({ initialQuery }: { initialQuery: string }) {
 
   function submitText(e: React.FormEvent) {
     e.preventDefault();
-    if (!hasText) return;
-    const next = `?q=${encodeURIComponent(query.trim())}`;
+    const trimmed = query.trim();
+    if (!trimmed) return;
+    const next = new URLSearchParams(params ?? undefined);
+    next.delete("page");
+    next.set("q", trimmed);
+    removeEmptyParams(next);
+    const qs = next.toString();
     startTransition(() => {
-      router.replace(next, { scroll: false });
+      router.replace(qs ? `?${qs}` : "?", { scroll: false });
     });
   }
 
@@ -124,6 +143,12 @@ function SearchForm({ initialQuery }: { initialQuery: string }) {
   );
 }
 
+
+function removeEmptyParams(params: URLSearchParams) {
+  for (const [key, value] of Array.from(params.entries())) {
+    if (value === "") params.delete(key);
+  }
+}
 function readFileAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

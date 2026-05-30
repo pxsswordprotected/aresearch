@@ -1,6 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import {
+  Suspense,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+  type CSSProperties,
+} from "react";
+import {
+  useRouter,
+  useSearchParams,
+  type ReadonlyURLSearchParams,
+} from "next/navigation";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react/dist/ssr";
 import { Panel } from "@/components/dashboard/panel";
 import { cn } from "@/lib/utils";
@@ -11,11 +23,11 @@ type IndexedChannel = ChannelSummary & {
   url: string | null;
 };
 
-
 type ChannelsCardProps = {
   className?: string;
   onSelectionChange?: (channels: ChannelSummary[]) => void;
 };
+
 const CHANNELS_PER_PAGE = 8;
 
 const SELECTED_ROW_STYLE = {
@@ -28,15 +40,43 @@ const SELECTED_ROW_STYLE = {
   ].join(", "),
 } satisfies CSSProperties;
 
-export function ChannelsCard({
+export function ChannelsCard(props: ChannelsCardProps) {
+  return (
+    <Suspense fallback={<ChannelsCardFallback className={props.className} />}>
+      <ChannelsCardInner {...props} />
+    </Suspense>
+  );
+}
+
+function ChannelsCardFallback({ className }: { className?: string }) {
+  return (
+    <Panel className={cn("flex flex-col py-4", className)}>
+      <h2 className="px-6 text-xl leading-5 font-bold text-neutral-800">
+        Channels
+      </h2>
+      <div className="mt-4 h-px shrink-0 bg-stroke" />
+      <div className="mt-4 flex min-h-0 flex-1 flex-col justify-between px-6">
+        <p className="text-sm text-black/50">Loading channels…</p>
+      </div>
+      <div className="mt-4 h-px shrink-0 bg-stroke" />
+      <div className="mt-4 flex h-5 items-center justify-between gap-3 px-6 text-sm text-black/50" />
+    </Panel>
+  );
+}
+
+function ChannelsCardInner({
   className,
   onSelectionChange,
 }: ChannelsCardProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const channelsParam = searchParams.get("channels");
+  const [, startTransition] = useTransition();
   const [channels, setChannels] = useState<IndexedChannel[] | null>(null);
   const [channelsLoading, setChannelsLoading] = useState(false);
   const [channelsError, setChannelsError] = useState<string | null>(null);
   const [selectedChannelIds, setSelectedChannelIds] = useState<Set<number>>(
-    () => new Set(),
+    () => parseChannelIds(channelsParam),
   );
   const [page, setPage] = useState(0);
 
@@ -54,15 +94,6 @@ export function ChannelsCard({
       }
       setChannels(body.channels);
       setPage(0);
-      setSelectedChannelIds((prev) => {
-        if (prev.size === 0) return prev;
-        const available = new Set(body.channels.map((c) => c.id));
-        const next = new Set<number>();
-        for (const id of prev) {
-          if (available.has(id)) next.add(id);
-        }
-        return next;
-      });
     } catch (err) {
       setChannelsError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -73,6 +104,14 @@ export function ChannelsCard({
   useEffect(() => {
     void loadChannels();
   }, []);
+
+  useEffect(() => {
+    const next = normalizeSelectedIds(
+      sanitizeChannelIds(parseChannelIds(channelsParam), channels),
+      channels,
+    );
+    setSelectedChannelIds((prev) => (setsEqual(prev, next) ? prev : next));
+  }, [channels, channelsParam]);
 
   const totalChannels = channels?.length ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalChannels / CHANNELS_PER_PAGE));
@@ -94,8 +133,9 @@ export function ChannelsCard({
   }, [channels, selectedChannelIds]);
 
   useEffect(() => {
+    if (!channels) return;
     onSelectionChange?.(selectedChannels);
-  }, [onSelectionChange, selectedChannels]);
+  }, [channels, onSelectionChange, selectedChannels]);
 
   const showingStart =
     totalChannels === 0 ? 0 : safePage * CHANNELS_PER_PAGE + 1;
@@ -104,17 +144,24 @@ export function ChannelsCard({
     (safePage + 1) * CHANNELS_PER_PAGE,
   );
 
-  function onToggleChannel(id: number) {
-    setSelectedChannelIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
+  function replaceSelectedChannels(ids: Set<number>) {
+    const next = normalizeSelectedIds(ids, channels);
+    setSelectedChannelIds(next);
+    const href = setChannelParams(searchParams, next);
+    startTransition(() => {
+      router.replace(href, { scroll: false });
     });
   }
 
+  function onToggleChannel(id: number) {
+    const next = new Set(selectedChannelIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    replaceSelectedChannels(next);
+  }
+
   function onClearChannels() {
-    setSelectedChannelIds(new Set());
+    replaceSelectedChannels(new Set());
   }
 
   return (
@@ -195,6 +242,73 @@ export function ChannelsCard({
       </div>
     </Panel>
   );
+}
+
+function parseChannelIds(raw: string | null): Set<number> {
+  const out = new Set<number>();
+  if (!raw) return out;
+  for (const part of raw.split(",")) {
+    const n = Number(part);
+    if (Number.isInteger(n) && n > 0) out.add(n);
+  }
+  return out;
+}
+
+function sanitizeChannelIds(
+  ids: Set<number>,
+  channels: readonly IndexedChannel[] | null,
+): Set<number> {
+  if (!channels || ids.size === 0) return ids;
+  const available = new Set(channels.map((channel) => channel.id));
+  const next = new Set<number>();
+  for (const id of ids) {
+    if (available.has(id)) next.add(id);
+  }
+  return next;
+}
+
+function normalizeSelectedIds(
+  ids: Set<number>,
+  channels: readonly IndexedChannel[] | null,
+): Set<number> {
+  if (!channels || ids.size === 0) return ids;
+  const selectableIds = channels
+    .filter((channel) => channel.block_count > 0)
+    .map((channel) => channel.id);
+  if (
+    selectableIds.length > 0 &&
+    selectableIds.every((id) => ids.has(id))
+  ) {
+    return new Set();
+  }
+  return ids;
+}
+
+function setChannelParams(
+  params: ReadonlyURLSearchParams,
+  ids: Set<number>,
+): string {
+  const next = new URLSearchParams(params);
+  next.delete("page");
+  if (ids.size === 0) next.delete("channels");
+  else next.set("channels", [...ids].sort((a, b) => a - b).join(","));
+  removeEmptyParams(next);
+  const qs = next.toString();
+  return qs ? `?${qs}` : "?";
+}
+
+function removeEmptyParams(params: URLSearchParams) {
+  for (const [key, value] of Array.from(params.entries())) {
+    if (value === "") params.delete(key);
+  }
+}
+
+function setsEqual(a: Set<number>, b: Set<number>): boolean {
+  if (a.size !== b.size) return false;
+  for (const value of a) {
+    if (!b.has(value)) return false;
+  }
+  return true;
 }
 
 function ChannelRow({
