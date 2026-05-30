@@ -14,6 +14,7 @@ import {
   type ReadonlyURLSearchParams,
 } from "next/navigation";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react/dist/ssr";
+import Button from "@/components/Button";
 import { Panel } from "@/components/dashboard/panel";
 import { cn } from "@/lib/utils";
 import type { ChannelSummary } from "./types";
@@ -220,24 +221,24 @@ function ChannelsCardInner({
           Showing {showingStart}-{showingEnd} of {totalChannels} channels
         </p>
         <div className="flex items-center gap-1">
-          <button
-            type="button"
+          <Button
+            variant="muted"
             aria-label="Previous channel page"
             disabled={safePage === 0 || totalChannels === 0}
             onClick={() => setPage((p) => Math.max(0, p - 1))}
-            className="rounded-base p-1 hover:bg-black/5 disabled:pointer-events-none disabled:opacity-30"
+            className="h-7 min-w-7 px-1.5 py-0"
           >
-            <CaretLeft size={16} />
-          </button>
-          <button
-            type="button"
+            <CaretLeft size={14} weight="bold" />
+          </Button>
+          <Button
+            variant="muted"
             aria-label="Next channel page"
             disabled={safePage >= totalPages - 1 || totalChannels === 0}
             onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-            className="rounded-base p-1 hover:bg-black/5 disabled:pointer-events-none disabled:opacity-30"
+            className="h-7 min-w-7 px-1.5 py-0"
           >
-            <CaretRight size={16} />
-          </button>
+            <CaretRight size={14} weight="bold" />
+          </Button>
         </div>
       </div>
     </Panel>
